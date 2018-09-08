@@ -7,7 +7,7 @@
 """
 
 __author__ = "Tongyan Xu"
-__version__ = "1.0.0"
+__version__ = "1.0.2"
 __about__ = """
 Option Portfolio Payoff Curve Generator
 Version {}
@@ -26,7 +26,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAbstractItemView, QApplication, QComboBox, QHBoxLayout, QMainWindow, QMenu, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from plot import PayoffCurve
-from option import Option, OptionPortfolio
+from option import Instrument, OptionPortfolio
 
 
 class ApplicationWindow(QMainWindow):
@@ -124,14 +124,15 @@ class ApplicationWindow(QMainWindow):
         _type._wgt = QComboBox()
         _type._wgt.addItem("CALL")
         _type._wgt.addItem("PUT")
+        _type._wgt.addItem("STOCK")
         _type._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _type._wgt)
 
         _wgt_name = "{}_direction".format(_option_id)
         _direction = QTableWidgetItem(_wgt_name)
         _direction._wgt = QComboBox()
-        _direction._wgt.addItem("BUY")
-        _direction._wgt.addItem("SELL")
+        _direction._wgt.addItem("LONG")
+        _direction._wgt.addItem("SHORT")
         _direction._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _direction._wgt)
 
@@ -171,7 +172,8 @@ class ApplicationWindow(QMainWindow):
             _strike = float(self._table.item(idx, 2).text())
             _price = float(self._table.item(idx, 3).text())
             _unit = int(self._table.item(idx, 4).text())
-            _option.append(Option(_type, _direction, _strike, _price, _unit))
+            _option.append(
+                Instrument.get_inst(_type, direction_=_direction, strike_=_strike, price_=_price, unit_=_unit))
         _portfolio = OptionPortfolio(_option)
         _x, _y = _portfolio.payoff_curve()
         self._plot.update_figure(dict(x=_x, y=_y))
