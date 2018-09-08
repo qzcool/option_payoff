@@ -4,26 +4,65 @@
 import numpy as np
 
 
-class Option(object):
+class Instrument(object):
+    """..."""
+    _direction = None
+    _unit = None
+    valid_direction = ['BUY', 'SELL']
+
+    def __init__(self, direction_, unit_=1):
+        self.direction = direction_
+        self.unit = unit_
+
+    def payoff(self, spot_):
+        """..."""
+        raise NotImplementedError
+
+    @property
+    def direction(self):
+        """option direction - BUY or SELL"""
+        if not self._direction:
+            raise ValueError("Option direction has not been set")
+        return self._direction
+
+    @direction.setter
+    def direction(self, direction_):
+        if not isinstance(direction_, str):
+            raise ValueError("Type <str> is required for option direction, not {}".format(type(direction_)))
+        if direction_.upper() not in self.valid_direction:
+            raise ValueError("Invalid option direction {}".format(direction_.upper()))
+        self._direction = direction_
+
+    @property
+    def unit(self):
+        """option unit - number of option"""
+        if self._unit is None:
+            raise ValueError("Option unit has not been set")
+        return self._unit
+
+    @unit.setter
+    def unit(self, unit_):
+        if not isinstance(unit_, int):
+            raise ValueError("Type <int> is required for option price, not {}".format(type(unit_)))
+        self._unit = unit_
+
+
+class Option(Instrument):
     """
         option class with basic parameters
         only vanilla option is available (barrier is not supported)
         can estimate option payoff under different level of spot
     """
     _type = None
-    _direction = None
     _strike = None
     _price = None
-    _unit = None
     valid_type = ['CALL', 'PUT']
-    valid_direction = ['BUY', 'SELL']
 
     def __init__(self, type_, direction_, strike_, price_=0, unit_=1):
+        super(Option, self).__init__(direction_, unit_)
         self.type = type_
-        self.direction = direction_
         self.strike = strike_
         self.price = price_
-        self.unit = unit_
 
     def payoff(self, spot_):
         """get option payoff for given spot"""
@@ -45,21 +84,6 @@ class Option(object):
         if type_.upper() not in self.valid_type:
             raise ValueError("Invalid option type {}".format(type_.upper()))
         self._type = type_.upper()
-
-    @property
-    def direction(self):
-        """option direction - BUY or SELL"""
-        if not self._direction:
-            raise ValueError("Option direction has not been set")
-        return self._direction
-
-    @direction.setter
-    def direction(self, direction_):
-        if not isinstance(direction_, str):
-            raise ValueError("Type <str> is required for option direction, not {}".format(type(direction_)))
-        if direction_.upper() not in self.valid_direction:
-            raise ValueError("Invalid option direction {}".format(direction_.upper()))
-        self._direction = direction_
 
     @property
     def strike(self):
@@ -86,19 +110,6 @@ class Option(object):
         if not isinstance(price_, float) and not isinstance(price_, int):
             raise ValueError("Type <int> or <float> is required for option price, not {}".format(type(price_)))
         self._price = price_
-
-    @property
-    def unit(self):
-        """option unit - number of option"""
-        if self._unit is None:
-            raise ValueError("Option unit has not been set")
-        return self._unit
-
-    @unit.setter
-    def unit(self, unit_):
-        if not isinstance(unit_, int):
-            raise ValueError("Type <int> is required for option price, not {}".format(type(unit_)))
-        self._unit = unit_
 
 
 class OptionPortfolio(object):

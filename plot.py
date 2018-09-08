@@ -1,6 +1,5 @@
 # coding=utf-8
 """plotting template"""
-__author__ = "Tongyan Xu"
 
 import numpy as np
 from PyQt5.QtWidgets import QSizePolicy
@@ -56,6 +55,4 @@ class PayoffCurve(MyMplCanvas):
         self._axes.set_ylabel("Payoff")
         self._axes.set_title("Option Portfolio Payoff Curve")
         self._axes.grid(axis='x', linewidth=0.75, linestyle='-', color='0.75')
-        self._axes.grid(which='minor', axis='x', linewidth=0.25, linestyle='-', color='0.75')
         self._axes.grid(axis='y', linewidth=0.75, linestyle='-', color='0.75')
-        self._axes.grid(which='minor', axis='y', linewidth=0.25, linestyle='-', color='0.75')
