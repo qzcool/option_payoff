@@ -144,7 +144,7 @@ class Stock(Instrument):
 
     def payoff(self, spot_):
         """..."""
-        return spot_ - 100
+        return (spot_ - self.price) * self.unit
 
 
 class OptionPortfolio(object):

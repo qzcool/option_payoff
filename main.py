@@ -7,7 +7,7 @@
 """
 
 __author__ = "Tongyan Xu"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __about__ = """
 Option Portfolio Payoff Curve Generator
 Version {}
@@ -124,7 +124,7 @@ class ApplicationWindow(QMainWindow):
         _type._wgt = QComboBox()
         _type._wgt.addItem("CALL")
         _type._wgt.addItem("PUT")
-        _type._wgt.addItem("STOCK")
+        # _type._wgt.addItem("STOCK")
         _type._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _type._wgt)
 
