@@ -9,7 +9,7 @@ valid_stock_type = 'STOCK'
 
 
 class Instrument(object):
-    """..."""
+    """financial instrument"""
     _type = None
     _direction = None
     _unit = None
@@ -23,19 +23,19 @@ class Instrument(object):
 
     @classmethod
     def get_inst(cls, type_, **kwargs):
-        """..."""
+        """get instrument through type"""
         if type_ == valid_stock_type:
             return Stock(**kwargs)
         elif type_ in valid_option_type:
             return Option(type_, **kwargs)
 
     def payoff(self, spot_):
-        """..."""
+        """get instrument payoff for given spot"""
         raise NotImplementedError
 
     @property
     def type(self):
-        """option type - CALL or PUT"""
+        """instrument type"""
         if not self._type:
             raise ValueError("Option type has not been set")
         return self._type
@@ -48,7 +48,7 @@ class Instrument(object):
 
     @property
     def direction(self):
-        """option direction - LONG or SHORT"""
+        """transaction direction - LONG or SHORT"""
         if not self._direction:
             raise ValueError("Option direction has not been set")
         return self._direction
@@ -63,7 +63,7 @@ class Instrument(object):
 
     @property
     def price(self):
-        """option price - percentage of buy spot"""
+        """instrument price - percentage of buy spot"""
         if self._price is None:
             raise ValueError("Option price has not been set")
         return self._price
@@ -76,7 +76,7 @@ class Instrument(object):
 
     @property
     def unit(self):
-        """option unit - number of option"""
+        """instrument unit - number of instrument"""
         if self._unit is None:
             raise ValueError("Option unit has not been set")
         return self._unit
@@ -90,9 +90,9 @@ class Instrument(object):
 
 class Option(Instrument):
     """
-        option class with basic parameters
-        only vanilla option is available (barrier is not supported)
-        can estimate option payoff under different level of spot
+    option class with basic parameters
+    only vanilla option is available (barrier is not supported)
+    can estimate option payoff under different level of spot
     """
 
     _strike = None
@@ -137,20 +137,20 @@ class Option(Instrument):
 
 
 class Stock(Instrument):
-    """..."""
+    """stock class with basic parameters"""
     def __init__(self, direction_, price_=100, unit_=1, *args, **kwargs):
         _type = valid_stock_type
         super(Stock, self).__init__(_type, direction_, price_, unit_)
 
     def payoff(self, spot_):
-        """..."""
+        """get stock payoff for given spot"""
         return (spot_ - self.price) * self.unit
 
 
 class OptionPortfolio(object):
     """
-        option portfolio class
-        can estimate all components total payoff
+    option portfolio class
+    can estimate all components total payoff
     """
     def __init__(self, option_list_):
         self._components = option_list_

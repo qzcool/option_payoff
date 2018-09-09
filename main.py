@@ -1,24 +1,15 @@
 # coding=utf-8
 """
-    Option Portfolio Payoff Curve Generator
-    This is a simple tool to estimate the payoff curve of option portfolio.
-    Currently, only vanilla options could be taken into consideration.
-    Pricing is not available and option price need to be set manually.
-"""
-
-__author__ = "Tongyan Xu"
-__version__ = "1.0.3"
-__about__ = """
 Option Portfolio Payoff Curve Generator
-Version {}
-Copyright: 2018 {}
-                    
+Version 1.0.4
+Copyright: Tongyan Xu, 2018
+
 This is a simple tool to estimate the payoff curve of option portfolio.
-                
+
 Currently, only vanilla options could be taken into consideration.
-                
+
 Pricing is not available and option price need to be set manually.
-""".format(__version__, __author__)
+"""
 
 import sys
 import numpy as np
@@ -31,9 +22,9 @@ from option import Instrument, OptionPortfolio
 
 class ApplicationWindow(QMainWindow):
     """
-        application main window
-        an option editor on the left
-        a payoff curve viewer on the right
+    application main window
+    an option editor on the left
+    a payoff curve viewer on the right
     """
     def __init__(self):
         QMainWindow.__init__(self)
@@ -66,7 +57,7 @@ class ApplicationWindow(QMainWindow):
         self.show()
 
     def _about(self):
-        QMessageBox.about(self, "About", __about__)
+        QMessageBox.about(self, "About", __doc__)
 
     def _quit(self):
         self.close()

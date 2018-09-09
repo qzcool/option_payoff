@@ -29,8 +29,8 @@ class PayoffCurve(MyMplCanvas):
 
     def _plot_figure(self, data_):
         """
-            plot payoff curve using given data
-            :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
+        plot payoff curve using given data
+        :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
         """
         _x = data_.get('x', np.array([]))
         _y = data_.get('y', np.array([]))
@@ -44,8 +44,8 @@ class PayoffCurve(MyMplCanvas):
 
     def update_figure(self, data_):
         """
-            update payoff curve using new data
-            :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
+        update payoff curve using new data
+        :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
         """
         self._plot_figure(data_)
         self.draw()
