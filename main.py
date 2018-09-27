@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.5
+Version 1.0.6
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -99,8 +99,8 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_file)
 
         _help = QMenu("&Help", self)
-        _help.addAction("&Help", self._help)
-        _help.addAction("&About", self._about)
+        _help.addAction("&Help", self._help, Qt.CTRL + Qt.Key_H)
+        _help.addAction("&About", self._about, Qt.CTRL + Qt.Key_A)
         self._menu.addMenu(_help)
 
     def _add_button_group(self, layout_):
