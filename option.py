@@ -2,14 +2,28 @@
 """definition of option and option portfolio, can estimate payoff directly"""
 
 import numpy as np
+from enum import Enum
 
-valid_direction = ['LONG', 'SHORT']
-valid_option_type = ['CALL', 'PUT']
-valid_stock_type = 'STOCK'
+
+class InstrumentType(Enum):
+    """valid instrument type"""
+    CALL = 0
+    PUT = 1
+    STOCK = 2
+
+
+class TransactionDirection(Enum):
+    """valid transaction direction"""
+    LONG = 0
+    SHORT = 1
+
+
+valid_option_type = [InstrumentType.CALL, InstrumentType.PUT]
 
 
 class Instrument(object):
     """financial instrument"""
+    _name = 'instrument'
     _type = None
     _direction = None
     _unit = None
@@ -22,12 +36,12 @@ class Instrument(object):
         self.price = price_
 
     @classmethod
-    def get_inst(cls, type_, **kwargs):
+    def get_inst(cls, type_, direction_, price_, unit_, **kwargs):
         """get instrument through type"""
-        if type_ == valid_stock_type:
-            return Stock(**kwargs)
+        if type_ == InstrumentType.STOCK:
+            return Stock(direction_=direction_, price_=price_, unit_=unit_)
         elif type_ in valid_option_type:
-            return Option(type_, **kwargs)
+            return Option(type_=type_, direction_=direction_, price_=price_, unit_=unit_, **kwargs)
 
     def payoff(self, spot_):
         """get instrument payoff for given spot"""
@@ -37,54 +51,54 @@ class Instrument(object):
     def type(self):
         """instrument type"""
         if not self._type:
-            raise ValueError("Option type has not been set")
+            raise ValueError("{} type has not been set".format(self._name))
         return self._type
 
     @type.setter
     def type(self, type_):
-        if not isinstance(type_, str):
-            raise ValueError("Type <str> is required for option type, not {}".format(type(type_)))
-        self._type = type_.upper()
+        if type_ not in InstrumentType:
+            raise ValueError("invalid {} type {}".format(self._name, type_))
+        self._type = type_
 
     @property
     def direction(self):
-        """transaction direction - LONG or SHORT"""
+        """transaction direction"""
         if not self._direction:
-            raise ValueError("Option direction has not been set")
+            raise ValueError("transaction direction has not been set")
         return self._direction
 
     @direction.setter
     def direction(self, direction_):
-        if not isinstance(direction_, str):
-            raise ValueError("Type <str> is required for option direction, not {}".format(type(direction_)))
-        if direction_.upper() not in valid_direction:
-            raise ValueError("Invalid option direction {}".format(direction_.upper()))
+        if direction_ not in TransactionDirection:
+            raise ValueError("invalid transaction direction {}".format(direction_))
         self._direction = direction_
 
     @property
     def price(self):
-        """instrument price - percentage of buy spot"""
+        """instrument price - percentage of ISP"""
         if self._price is None:
-            raise ValueError("Option price has not been set")
+            raise ValueError("{} price has not been set".format(self._name))
         return self._price
 
     @price.setter
     def price(self, price_):
-        if not isinstance(price_, float) and not isinstance(price_, int):
-            raise ValueError("Type <int> or <float> is required for option price, not {}".format(type(price_)))
+        if not isinstance(price_, (int, float)):
+            raise ValueError("type <int> or <float> is required for {} price, not {}".format(self._name, type(price_)))
         self._price = price_
 
     @property
     def unit(self):
         """instrument unit - number of instrument"""
         if self._unit is None:
-            raise ValueError("Option unit has not been set")
+            raise ValueError("{} unit has not been set".format(self._name))
         return self._unit
 
     @unit.setter
     def unit(self, unit_):
-        if not isinstance(unit_, int):
-            raise ValueError("Type <int> is required for option price, not {}".format(type(unit_)))
+        if not isinstance(unit_, (int, float)):
+            raise ValueError("type <int> is required for {} price, not {}".format(self._name, type(unit_)))
+        if unit_ < 0:
+            raise ValueError("{} unit should not be negative".format(self._name))
         self._unit = unit_
 
 
@@ -94,57 +108,56 @@ class Option(Instrument):
     only vanilla option is available (barrier is not supported)
     can estimate option payoff under different level of spot
     """
-
+    _name = 'option'
     _strike = None
 
-    def __init__(self, type_, direction_, strike_, price_=0, unit_=1, *args, **kwargs):
+    def __init__(self, type_, direction_, price_=0, unit_=1, **kwargs):
         super(Option, self).__init__(type_, direction_, price_, unit_)
-        self.strike = strike_
+        self.strike = kwargs.get('strike_', 100)
 
     def payoff(self, spot_):
         """get option payoff for given spot"""
-        _reference = spot_ - self.strike if self.type == 'CALL' else self.strike - spot_
-        _signal = 1 if self.direction == 'LONG' else -1
+        _reference = spot_ - self.strike if self.type == InstrumentType.CALL else self.strike - spot_
+        _signal = 1 if self.direction == TransactionDirection.LONG else -1
         return _signal * (max([_reference, 0]) - self.price) * self.unit
 
     @property
     def type(self):
         """option type - CALL or PUT"""
         if not self._type:
-            raise ValueError("Option type has not been set")
+            raise ValueError("{} type has not been set".format(self._name))
         return self._type
 
     @type.setter
     def type(self, type_):
-        if not isinstance(type_, str):
-            raise ValueError("Type <str> is required for option type, not {}".format(type(type_)))
-        if type_.upper() not in valid_option_type:
-            raise ValueError("Invalid option type {}".format(type_.upper()))
-        self._type = type_.upper()
+        if type_ not in valid_option_type:
+            raise ValueError("invalid {} type {}".format(self._name, type_))
+        self._type = type_
 
     @property
     def strike(self):
-        """strike level - percentage of buy spot"""
+        """strike level - percentage of ISP"""
         if self._strike is None:
-            raise ValueError("Strike level has not been set")
+            raise ValueError("strike level has not been set")
         return self._strike
 
     @strike.setter
     def strike(self, strike_):
         if not isinstance(strike_, float) and not isinstance(strike_, int):
-            raise ValueError("Type <int> or <float> is required for strike level, not {}".format(type(strike_)))
+            raise ValueError("type <int> or <float> is required for strike level, not {}".format(type(strike_)))
         self._strike = strike_
 
 
 class Stock(Instrument):
     """stock class with basic parameters"""
-    def __init__(self, direction_, price_=100, unit_=1, *args, **kwargs):
-        _type = valid_stock_type
+    def __init__(self, direction_, price_=100, unit_=1):
+        _type = InstrumentType.STOCK
         super(Stock, self).__init__(_type, direction_, price_, unit_)
 
     def payoff(self, spot_):
         """get stock payoff for given spot"""
-        return (spot_ - self.price) * self.unit
+        _signal = 1 if self.direction == TransactionDirection.LONG else -1
+        return _signal * (spot_ - self.price) * self.unit
 
 
 class OptionPortfolio(object):
@@ -166,7 +179,7 @@ class OptionPortfolio(object):
         """generate x (spot) and y (payoff) for portfolio payoff curve"""
         _min, _max = self.strike_range()
         _dist = max([100 - _min, _max - 100])
-        _x = np.arange(100 - _dist - margin_, 100 + _dist + margin_, step_)
+        _x = np.arange(100 - _dist - margin_, 100 + _dist + margin_ + step_, step_)
         _y = np.vectorize(self._payoff)(_x)
         return _x, _y
 
@@ -176,8 +189,8 @@ class OptionPortfolio(object):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    option_a = Option('CALL', 'BUY', 80)
-    option_b = Option('CALL', 'SELL', 120)
+    option_a = Option(InstrumentType.CALL, TransactionDirection.LONG, strike_=80)
+    option_b = Option(InstrumentType.CALL, TransactionDirection.SHORT, strike_=120)
     portfolio = OptionPortfolio([option_a, option_b])
     x, y = portfolio.payoff_curve()
     plt.plot(x, y, 'r')

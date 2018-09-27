@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.4
+Version 1.0.5
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -14,10 +14,19 @@ Pricing is not available and option price need to be set manually.
 import sys
 import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAbstractItemView, QApplication, QComboBox, QHBoxLayout, QMainWindow, QMenu, QMessageBox
-from PyQt5.QtWidgets import QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QAbstractItemView, QApplication, QComboBox, QFileDialog, QHBoxLayout, QMainWindow, QMenu
+from PyQt5.QtWidgets import QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 from plot import PayoffCurve
-from option import Instrument, OptionPortfolio
+from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
+
+
+default_param = [None for _type in InstrumentType]
+default_param[InstrumentType.CALL.value] = dict(strike='100', price='0', unit='1')
+default_param[InstrumentType.PUT.value] = dict(strike='100', price='0', unit='1')
+default_param[InstrumentType.STOCK.value] = dict(strike='--', price='100', unit='1')
+
+with open('help.txt') as f:
+    __help__ = f.read()
 
 
 class ApplicationWindow(QMainWindow):
@@ -56,8 +65,23 @@ class ApplicationWindow(QMainWindow):
         """run main window"""
         self.show()
 
+    def load(self):
+        """..."""
+        pass
+
+    def save(self):
+        """..."""
+        pass
+
+    def export(self):
+        """..."""
+        pass
+
     def _about(self):
         QMessageBox.about(self, "About", __doc__)
+
+    def _help(self):
+        QMessageBox.about(self, "Help", __help__)
 
     def _quit(self):
         self.close()
@@ -75,6 +99,7 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_file)
 
         _help = QMenu("&Help", self)
+        _help.addAction("&Help", self._help)
         _help.addAction("&About", self._about)
         self._menu.addMenu(_help)
 
@@ -108,32 +133,32 @@ class ApplicationWindow(QMainWindow):
         if isinstance(self._table, QTableWidget):
             self._table.setRowCount(self._table.rowCount() + 1)
 
-        _option_id = self._option_id()
+        _inst_id = self._inst_id()
 
-        _wgt_name = "{}_type".format(_option_id)
+        _wgt_name = "{}_type".format(_inst_id)
         _type = QTableWidgetItem(_wgt_name)
         _type._wgt = QComboBox()
-        _type._wgt.addItem("CALL")
-        _type._wgt.addItem("PUT")
-        # _type._wgt.addItem("STOCK")
+        for _inst_type in InstrumentType:
+            _type._wgt.addItem(_inst_type.name)
         _type._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _type._wgt)
+        _type._wgt.currentIndexChanged.connect(self._set_default)
 
-        _wgt_name = "{}_direction".format(_option_id)
+        _wgt_name = "{}_direction".format(_inst_id)
         _direction = QTableWidgetItem(_wgt_name)
         _direction._wgt = QComboBox()
-        _direction._wgt.addItem("LONG")
-        _direction._wgt.addItem("SHORT")
+        for _trans_direction in TransactionDirection:
+            _direction._wgt.addItem(_trans_direction.name)
         _direction._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _direction._wgt)
 
-        _strike = QTableWidgetItem("100")
+        _strike = QTableWidgetItem(default_param[0]['strike'])
         _strike.setTextAlignment(Qt.AlignCenter)
 
-        _price = QTableWidgetItem("0")
+        _price = QTableWidgetItem(default_param[0]['price'])
         _price.setTextAlignment(Qt.AlignCenter)
 
-        _unit = QTableWidgetItem("1")
+        _unit = QTableWidgetItem(default_param[0]['unit'])
         _unit.setTextAlignment(Qt.AlignCenter)
 
         self._table.setItem(self._table.rowCount() - 1, 0, _type)
@@ -158,20 +183,27 @@ class ApplicationWindow(QMainWindow):
     def _collect_option(self):
         _option = []
         for idx in range(self._table.rowCount()):
-            _type = self.__getattribute__(self._table.item(idx, 0).text()).currentText()
-            _direction = self.__getattribute__(self._table.item(idx, 1).text()).currentText()
-            _strike = float(self._table.item(idx, 2).text())
+            _type = InstrumentType(self.__getattribute__(self._table.item(idx, 0).text()).currentIndex())
+            _direction = TransactionDirection(self.__getattribute__(self._table.item(idx, 1).text()).currentIndex())
+            _strike = float(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK else None
             _price = float(self._table.item(idx, 3).text())
-            _unit = int(self._table.item(idx, 4).text())
+            _unit = float(self._table.item(idx, 4).text())
             _option.append(
                 Instrument.get_inst(_type, direction_=_direction, strike_=_strike, price_=_price, unit_=_unit))
         _portfolio = OptionPortfolio(_option)
         _x, _y = _portfolio.payoff_curve()
         self._plot.update_figure(dict(x=_x, y=_y))
 
-    def _option_id(self):
+    def _inst_id(self):
         self._seq += 1
-        return "Option-{}".format(self._seq)
+        return "Inst-{}".format(self._seq)
+
+    def _set_default(self):
+        for _row in range(self._table.rowCount()):
+            _type_value = self.__getattribute__(self._table.item(_row, 0).text()).currentIndex()
+            self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
+            self._table.item(_row, 3).setText(default_param[_type_value]['price'])
+            self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
 
 
 if __name__ == '__main__':

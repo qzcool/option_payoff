@@ -1,0 +1,26 @@
+Instrument Type:
+
+    OPTION - CALL (call option), PUT (put option)
+
+    STOCK (could also be considered as FORWARD)
+
+    BOND (still under development)
+
+
+Transaction Direction: LONG & SHORT
+
+
+Other Parameters:
+
+    Strike - strike level for OPTION only
+        * marked as % of underlying ISP
+        * strike level is useless for STOCK
+
+    Price - price level for all instruments
+        * marked as % of underlying ISP
+        * buying price for STOCK
+        * agreeable price in the future for FORWARD
+
+    Unit - unit of each instrument
+        * could be a FLOAT number
+        * should not be NEGATIVE (switch direction)

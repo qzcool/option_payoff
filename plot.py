@@ -5,6 +5,7 @@ import numpy as np
 from PyQt5.QtWidgets import QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.pyplot import savefig
 
 
 class MyMplCanvas(FigureCanvas):
@@ -21,7 +22,7 @@ class MyMplCanvas(FigureCanvas):
 
     def _plot_figure(self, data_):
         """plot figure using given data"""
-        raise NotImplementedError("This method needs to be defined by subclass")
+        raise NotImplementedError("this method needs to be defined by subclass")
 
 
 class PayoffCurve(MyMplCanvas):
@@ -35,9 +36,10 @@ class PayoffCurve(MyMplCanvas):
         _x = data_.get('x', np.array([]))
         _y = data_.get('y', np.array([]))
         if _x.size and _y.size:
-            self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
-            self._axes.hold(True)
             self._axes.plot(np.linspace(100, 100, _y.size), _y, color="grey", linewidth=1.5)
+            self._axes.hold(True)
+            if _y.min() <= 0 <= _y.max():
+                self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
             self._axes.plot(_x, _y, 'r')
         self._axes.hold(False)
         self._set_axis()
@@ -49,6 +51,13 @@ class PayoffCurve(MyMplCanvas):
         """
         self._plot_figure(data_)
         self.draw()
+
+    def save(self, file_path_):
+        """
+        save figure to file using given path
+        :param file_path_: a str indicating path to save figure file
+        """
+        raise NotImplementedError("this method is to be implemented later")
 
     def _set_axis(self):
         self._axes.set_xlabel("Spot")
