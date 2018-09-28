@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.8
+Version 1.0.9
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -20,14 +20,38 @@ from json import dumps, loads
 from plot import PayoffCurve
 from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
 
-
 default_param = [None for _type in InstrumentType]
 default_param[InstrumentType.CALL.value] = dict(strike='100', price='0', unit='1')
 default_param[InstrumentType.PUT.value] = dict(strike='100', price='0', unit='1')
 default_param[InstrumentType.STOCK.value] = dict(strike='--', price='100', unit='1')
 
-with open('help.txt') as help_file:
-    __help__ = help_file.read()
+__help__ = '''
+Instrument Type:
+
+    OPTION - CALL (call option), PUT (put option)
+    STOCK (could also be considered as FORWARD)
+    BOND (still under development)
+
+
+Transaction Direction: LONG & SHORT
+
+
+Other Parameters:
+
+    Strike - strike level for OPTION only
+        * marked as % of underlying ISP
+        * strike level is useless for STOCK
+
+    Price - price level for all instruments
+        * marked as % of underlying ISP
+        * buying price for STOCK
+        * agreeable price in the future for FORWARD
+
+    Unit - unit of each instrument
+        * could be a FLOAT number
+        * should not be NEGATIVE (switch direction)
+
+'''
 
 
 class ApplicationWindow(QMainWindow):
@@ -47,6 +71,7 @@ class ApplicationWindow(QMainWindow):
         self._seq = 0
         self.set_ui()
         self.setCentralWidget(self._main)
+        self.show()
 
     def set_ui(self):
         """setup menu, option editor, and payoff curve viewer"""
@@ -76,9 +101,8 @@ class ApplicationWindow(QMainWindow):
 
         if _raw_data:
             try:
-                self._table.clear()
-                self._table.removeRow(0)
-                self._seq = 0
+                while self._table.rowCount():
+                    self._table.removeRow(0)
 
                 for _row in range(len(_raw_data)):
                     self._add_row()
@@ -173,12 +197,13 @@ class ApplicationWindow(QMainWindow):
 
         _wgt_name = "{}_type".format(_inst_id)
         _type = QTableWidgetItem(_wgt_name)
-        _type._wgt = QComboBox()
+        from custom import CustomComboBox
+        _type._wgt = CustomComboBox(wgt_name_=_wgt_name)
         for _inst_type in InstrumentType:
             _type._wgt.addItem(_inst_type.name)
         _type._wgt.setFixedWidth(80)
         self.__setattr__(_wgt_name, _type._wgt)
-        _type._wgt.currentIndexChanged.connect(self._set_default)
+        _type._wgt.changed.connect(self._set_default)
 
         _wgt_name = "{}_direction".format(_inst_id)
         _direction = QTableWidgetItem(_wgt_name)
@@ -245,16 +270,16 @@ class ApplicationWindow(QMainWindow):
         self._seq += 1
         return "Inst-{}".format(self._seq)
 
-    def _set_default(self):
+    def _set_default(self, wgt_name_):
         for _row in range(self._table.rowCount()):
-            _type_value = self.__getattribute__(self._table.item(_row, 0).text()).currentIndex()
-            self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
-            self._table.item(_row, 3).setText(default_param[_type_value]['price'])
-            self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
+            if self._table.item(_row, 0).text() == wgt_name_:
+                _type_value = self.__getattribute__(self._table.item(_row, 0).text()).currentIndex()
+                self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
+                self._table.item(_row, 3).setText(default_param[_type_value]['price'])
+                self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = ApplicationWindow()
-    main.run()
     sys.exit(app.exec_())

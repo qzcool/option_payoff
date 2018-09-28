@@ -10,11 +10,11 @@ from matplotlib.figure import Figure
 class MyMplCanvas(FigureCanvas):
     """DIY figure canvas"""
     def __init__(self, data_=None, parent_=None, width_=5, height_=4, dpi_=100):
-        _fig = Figure(figsize=(width_, height_), dpi=dpi_)
-        self._axes = _fig.add_subplot(111)
+        self._fig = Figure(figsize=(width_, height_), dpi=dpi_)
+        self._axes = self._fig.add_subplot(111)
         self._plot_figure(data_)
 
-        FigureCanvas.__init__(self, _fig)
+        FigureCanvas.__init__(self, self._fig)
         self.setParent(parent_)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
@@ -35,12 +35,11 @@ class PayoffCurve(MyMplCanvas):
         _x = data_.get('x', np.array([]))
         _y = data_.get('y', np.array([]))
         if _x.size and _y.size:
+            self._axes.clear()
             self._axes.plot(np.linspace(100, 100, _y.size), _y, color="grey", linewidth=1.5)
-            self._axes.hold(True)
             if _y.min() <= 0 <= _y.max():
                 self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
             self._axes.plot(_x, _y, 'r')
-        self._axes.hold(False)
         self._set_axis()
 
     def update_figure(self, data_):
