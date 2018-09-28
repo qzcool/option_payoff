@@ -5,7 +5,6 @@ import numpy as np
 from PyQt5.QtWidgets import QSizePolicy
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.pyplot import savefig
 
 
 class MyMplCanvas(FigureCanvas):
@@ -51,13 +50,13 @@ class PayoffCurve(MyMplCanvas):
         """
         self._plot_figure(data_)
         self.draw()
-
+        
     def save(self, file_path_):
         """
         save figure to file using given path
         :param file_path_: a str indicating path to save figure file
         """
-        raise NotImplementedError("this method is to be implemented later")
+        self.print_png(file_path_)
 
     def _set_axis(self):
         self._axes.set_xlabel("Spot")

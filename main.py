@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.7
+Version 1.0.8
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -67,7 +67,7 @@ class ApplicationWindow(QMainWindow):
         self.show()
 
     def _load(self):
-        _file_path, _file_type = QFileDialog.getOpenFileName(self, "Load Portfolio", '.', "Json Files (*.json)")
+        _file_path, _file_type = QFileDialog.getOpenFileName(self, "Load Portfolio", '.', "JSON Files (*.json)")
         if not _file_path:
             return
 
@@ -96,7 +96,7 @@ class ApplicationWindow(QMainWindow):
             QMessageBox.warning(self, "Load Portfolio", "No data found in {}".format(_file_path))
 
     def _save(self):
-        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "Json Files (*.json)")
+        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "JSON Files (*.json)")
         if not _file_path:
             return
 
@@ -104,8 +104,11 @@ class ApplicationWindow(QMainWindow):
             f.write(dumps(self._collect_(), indent=4))
 
     def _export(self):
-        """..."""
-        pass
+        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "PNG Files (*.png)")
+        if not _file_path:
+            return
+
+        self._plot.save(_file_path)
 
     def _about(self):
         QMessageBox.about(self, "About", __doc__)
@@ -127,6 +130,7 @@ class ApplicationWindow(QMainWindow):
         _file = QMenu("&File", self)
         _file.addAction("&Load", self._load, Qt.CTRL + Qt.Key_L)
         _file.addAction("&Save", self._save, Qt.CTRL + Qt.Key_S)
+        _file.addAction("&Export", self._export, Qt.CTRL + Qt.Key_E)
         _file.addAction("&Quit", self._quit, Qt.CTRL + Qt.Key_Q)
         self._menu.addMenu(_file)
 
