@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.6
+Version 1.0.7
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -16,6 +16,7 @@ import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAbstractItemView, QApplication, QComboBox, QFileDialog, QHBoxLayout, QMainWindow, QMenu
 from PyQt5.QtWidgets import QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from json import dumps, loads
 from plot import PayoffCurve
 from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
 
@@ -25,8 +26,8 @@ default_param[InstrumentType.CALL.value] = dict(strike='100', price='0', unit='1
 default_param[InstrumentType.PUT.value] = dict(strike='100', price='0', unit='1')
 default_param[InstrumentType.STOCK.value] = dict(strike='--', price='100', unit='1')
 
-with open('help.txt') as f:
-    __help__ = f.read()
+with open('help.txt') as help_file:
+    __help__ = help_file.read()
 
 
 class ApplicationWindow(QMainWindow):
@@ -65,15 +66,44 @@ class ApplicationWindow(QMainWindow):
         """run main window"""
         self.show()
 
-    def load(self):
-        """..."""
-        pass
+    def _load(self):
+        _file_path, _file_type = QFileDialog.getOpenFileName(self, "Load Portfolio", '.', "Json Files (*.json)")
+        if not _file_path:
+            return
 
-    def save(self):
-        """..."""
-        pass
+        with open(_file_path) as f:
+            _raw_data = loads(f.read())
 
-    def export(self):
+        if _raw_data:
+            try:
+                self._table.clear()
+                self._table.removeRow(0)
+                self._seq = 0
+
+                for _row in range(len(_raw_data)):
+                    self._add_row()
+                    self.__getattribute__(self._table.item(_row, 0).text()).setCurrentIndex(_raw_data[_row][0])
+                    self.__getattribute__(self._table.item(_row, 1).text()).setCurrentIndex(_raw_data[_row][1])
+                    self._table.item(_row, 2).setText(str(_raw_data[_row][2]) if _raw_data[_row][2] else '--')
+                    self._table.item(_row, 3).setText(str(_raw_data[_row][3]))
+                    self._table.item(_row, 4).setText(str(_raw_data[_row][4]))
+
+            except Exception as e:
+                QMessageBox.warning(self, "Load Portfolio", "Illegal data in {}\nError Message:{}".format(
+                    _file_path, str(e)))
+
+        else:
+            QMessageBox.warning(self, "Load Portfolio", "No data found in {}".format(_file_path))
+
+    def _save(self):
+        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "Json Files (*.json)")
+        if not _file_path:
+            return
+
+        with open(_file_path, 'w') as f:
+            f.write(dumps(self._collect_(), indent=4))
+
+    def _export(self):
         """..."""
         pass
 
@@ -95,6 +125,8 @@ class ApplicationWindow(QMainWindow):
         self._menu.setNativeMenuBar(False)
 
         _file = QMenu("&File", self)
+        _file.addAction("&Load", self._load, Qt.CTRL + Qt.Key_L)
+        _file.addAction("&Save", self._save, Qt.CTRL + Qt.Key_S)
         _file.addAction("&Quit", self._quit, Qt.CTRL + Qt.Key_Q)
         self._menu.addMenu(_file)
 
@@ -110,7 +142,7 @@ class ApplicationWindow(QMainWindow):
         _delete_btn = QPushButton("Delete")
         _delete_btn.clicked.connect(self._delete_row)
         _plot_btn = QPushButton("Plot")
-        _plot_btn.clicked.connect(self._collect_option)
+        _plot_btn.clicked.connect(self._do_plot)
         _hbox.addWidget(_add_btn)
         _hbox.addWidget(_delete_btn)
         _hbox.addWidget(_plot_btn)
@@ -127,7 +159,7 @@ class ApplicationWindow(QMainWindow):
         self._table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self._table.setSelectionMode(QAbstractItemView.SingleSelection)
         self._add_row()
-        self._collect_option()
+        self._do_plot()
 
     def _add_row(self):
         if isinstance(self._table, QTableWidget):
@@ -180,19 +212,30 @@ class ApplicationWindow(QMainWindow):
             self.__delattr__(_direction)
             self._table.removeRow(_row)
 
-    def _collect_option(self):
-        _option = []
+    def _collect_(self):
+        _raw_data = []
         for idx in range(self._table.rowCount()):
-            _type = InstrumentType(self.__getattribute__(self._table.item(idx, 0).text()).currentIndex())
-            _direction = TransactionDirection(self.__getattribute__(self._table.item(idx, 1).text()).currentIndex())
-            _strike = float(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK else None
-            _price = float(self._table.item(idx, 3).text())
-            _unit = float(self._table.item(idx, 4).text())
-            _option.append(
-                Instrument.get_inst(_type, direction_=_direction, strike_=_strike, price_=_price, unit_=_unit))
+            _type = self.__getattribute__(self._table.item(idx, 0).text()).currentIndex()
+            _direction = self.__getattribute__(self._table.item(idx, 1).text()).currentIndex()
+            _strike = self._format(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK.value else None
+            _price = self._format(self._table.item(idx, 3).text())
+            _unit = self._format(self._table.item(idx, 4).text())
+            _raw_data.append((_type, _direction, _strike, _price, _unit))
+        return _raw_data
+
+    def _do_plot(self):
+        _raw_data = self._collect_()
+        _option = [Instrument.get_inst(InstrumentType(_type), direction_=TransactionDirection(_direction),
+                                       strike_=_strike, price_=_price, unit_=_unit)
+                   for _type, _direction, _strike, _price, _unit in _raw_data]
         _portfolio = OptionPortfolio(_option)
         _x, _y = _portfolio.payoff_curve()
         self._plot.update_figure(dict(x=_x, y=_y))
+
+    @staticmethod
+    def _format(string_):
+        _number = float(string_)
+        return _number if _number % 1 else int(_number)
 
     def _inst_id(self):
         self._seq += 1
