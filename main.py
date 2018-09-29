@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.9
+Version 1.0.10
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
@@ -87,10 +87,6 @@ class ApplicationWindow(QMainWindow):
         _main_layout.addWidget(self._plot)
         self._main.setFocus()
 
-    def run(self):
-        """run main window"""
-        self.show()
-
     def _load(self):
         _file_path, _file_type = QFileDialog.getOpenFileName(self, "Load Portfolio", '.', "JSON Files (*.json)")
         if not _file_path:
@@ -113,19 +109,22 @@ class ApplicationWindow(QMainWindow):
                     self._table.item(_row, 4).setText(str(_raw_data[_row][4]))
 
             except Exception as e:
-                QMessageBox.warning(self, "Load Portfolio", "Illegal data in {}\nError Message:{}".format(
+                QMessageBox.warning(self, "Load Portfolio", "Invalid data in {}\nError Message:{}".format(
                     _file_path, str(e)))
 
         else:
             QMessageBox.warning(self, "Load Portfolio", "No data found in {}".format(_file_path))
 
     def _save(self):
-        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "JSON Files (*.json)")
-        if not _file_path:
-            return
+        _raw_data = self._collect_()
 
-        with open(_file_path, 'w') as f:
-            f.write(dumps(self._collect_(), indent=4))
+        if _raw_data:
+            _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "JSON Files (*.json)")
+            if not _file_path:
+                return
+
+            with open(_file_path, 'w') as f:
+                f.write(dumps(_raw_data, indent=4))
 
     def _export(self):
         _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "PNG Files (*.png)")
@@ -244,27 +243,30 @@ class ApplicationWindow(QMainWindow):
     def _collect_(self):
         _raw_data = []
         for idx in range(self._table.rowCount()):
-            _type = self.__getattribute__(self._table.item(idx, 0).text()).currentIndex()
-            _direction = self.__getattribute__(self._table.item(idx, 1).text()).currentIndex()
-            _strike = self._format(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK.value else None
-            _price = self._format(self._table.item(idx, 3).text())
-            _unit = self._format(self._table.item(idx, 4).text())
+            try:
+                _type = self.__getattribute__(self._table.item(idx, 0).text()).currentIndex()
+                _direction = self.__getattribute__(self._table.item(idx, 1).text()).currentIndex()
+                _strike = self._format(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK.value else None
+                _price = self._format(self._table.item(idx, 3).text())
+                _unit = self._format(self._table.item(idx, 4).text())
+
+            except ValueError as e:
+                QMessageBox.warning(self, "Collect Input",
+                                    "Invalid input for instrument parameters\nError message: {}".format(str(e)))
+                return None
+
             _raw_data.append((_type, _direction, _strike, _price, _unit))
         return _raw_data
 
     def _do_plot(self):
         _raw_data = self._collect_()
-        _option = [Instrument.get_inst(InstrumentType(_type), direction_=TransactionDirection(_direction),
-                                       strike_=_strike, price_=_price, unit_=_unit)
-                   for _type, _direction, _strike, _price, _unit in _raw_data]
-        _portfolio = OptionPortfolio(_option)
-        _x, _y = _portfolio.payoff_curve()
-        self._plot.update_figure(dict(x=_x, y=_y))
-
-    @staticmethod
-    def _format(string_):
-        _number = float(string_)
-        return _number if _number % 1 else int(_number)
+        if _raw_data:
+            _option = [Instrument.get_inst(InstrumentType(_type), direction_=TransactionDirection(_direction),
+                                           strike_=_strike, price_=_price, unit_=_unit)
+                       for _type, _direction, _strike, _price, _unit in _raw_data]
+            _portfolio = OptionPortfolio(_option)
+            _x, _y = _portfolio.payoff_curve()
+            self._plot.update_figure(dict(x=_x, y=_y))
 
     def _inst_id(self):
         self._seq += 1
@@ -277,6 +279,11 @@ class ApplicationWindow(QMainWindow):
                 self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
                 self._table.item(_row, 3).setText(default_param[_type_value]['price'])
                 self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
+
+    @staticmethod
+    def _format(string_):
+        _number = float(string_)
+        return _number if _number % 1 else int(_number)
 
 
 if __name__ == '__main__':
