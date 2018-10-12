@@ -3,15 +3,8 @@
 
 import numpy as np
 import scipy.stats as sps
-from enum import Enum
-from instrument import Instrument, InstParam, InstType
+from instrument import Instrument, InstParam, InstType, option_type
 from instrument.parameter import EngineMethod, EngineParam, MktParam
-
-
-class OptionType(Enum):
-    """option type - CALL or PUT"""
-    Call = 0
-    Put = 1
 
 
 class Option(Instrument):
@@ -22,27 +15,26 @@ class Option(Instrument):
     can evaluate option price under different market using different evaluation engine
     """
     _name = "option"
-    _callput = None
     _strike = None
     _maturity = None
     _ud_vol = None
 
     def __init__(self, inst_dict_):
         super(Option, self).__init__(inst_dict_)
-        self.callput = inst_dict_.get(InstParam.OptionType.value)
+        self.type = inst_dict_.get(InstParam.InstType.value)
         self.strike = inst_dict_.get(InstParam.OptionStrike.value)
         self.maturity = inst_dict_.get(InstParam.OptionMaturity.value)
 
     def payoff(self, spot_):
         """get option payoff for given spot"""
-        _reference = spot_ - self.strike if self.callput == OptionType.Call.value else self.strike - spot_
+        _reference = spot_ - self.strike if self.type == InstType.CallOption.value else self.strike - spot_
         return (max([_reference, 0]) - self.price) * self.unit
 
     def evaluate(self, mkt_dict_, engine_):
         """do option pricing with market data and engine"""
         _rate, _vol = self._load_market(mkt_dict_)
         _method, _param = self._load_engine(engine_)
-        _sign = 1 if self.callput == OptionType.Call.value else -1
+        _sign = 1 if self.type == InstType.CallOption.value else -1
 
         if _method == EngineMethod.Analytic.value:
             _d1 = (np.ma.log(100 / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
@@ -63,17 +55,17 @@ class Option(Instrument):
             return np.average(_price) * np.ma.exp(-_rate * self.maturity)
 
     @property
-    def callput(self):
+    def type(self):
         """option type - CALL or PUT"""
-        if self._callput is None:
+        if self._type is None:
             raise ValueError("{} type not specified".format(self._name))
-        return self._callput
+        return self._type
 
-    @callput.setter
-    def callput(self, callput_):
-        if callput_ not in [_type.value for _type in OptionType]:
+    @type.setter
+    def type(self, type_):
+        if type_ not in option_type:
             raise ValueError("invalid {} type given".format(self._name))
-        self._callput = callput_
+        self._type = type_
 
     @property
     def strike(self):
@@ -130,7 +122,7 @@ if __name__ == '__main__':
 
     logger = get_default_logger("option pricing test")
 
-    callput = OptionType.Call.value
+    callput = InstType.CallOption.value
     strike = 80
     spot = 100
     maturity = 1
@@ -139,8 +131,7 @@ if __name__ == '__main__':
     iteration = 1000000
 
     inst_1 = {
-        InstParam.InstType.value: InstType.Option.value,
-        InstParam.OptionType.value: callput,
+        InstParam.InstType.value: callput,
         InstParam.OptionStrike.value: strike,
         InstParam.OptionMaturity.value: maturity
     }
@@ -156,7 +147,7 @@ if __name__ == '__main__':
     option_1 = Instrument.get_inst(inst_1)
 
     _timer = Timer("option pricing: {} {}, {} years, rate {}%, vol {}%".format(
-        strike, "call" if callput == OptionType.Call.value else "put", maturity, rate, vol), logger, rounding_=6)
+        strike, "call" if callput == InstType.CallOption.value else "put", maturity, rate, vol), logger, rounding_=6)
     price_bs = round(option_1.evaluate(mkt, engine_1), 6)
     logger.info("price = {} (Black-Scholes)".format(price_bs))
     _timer.mark("pricing using Black-Scholes")

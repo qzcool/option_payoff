@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.0 - alpha 1.1
+Version 1.1.0 - alpha 2
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -10,8 +10,8 @@ This is a simple tool to estimate the payoff curve of vanilla portfolio.
 import sys
 import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAbstractItemView, QApplication, QComboBox, QFileDialog, QHBoxLayout, QMainWindow, QMenu
-from PyQt5.QtWidgets import QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu
+from PyQt5.QtWidgets import QMessageBox, QPushButton, QVBoxLayout, QWidget
 from json import dumps, loads
 from plot import PayoffCurve
 from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
@@ -36,21 +36,20 @@ class ApplicationWindow(QMainWindow):
         # set basic parameters
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Option Portfolio Payoff Curve")
-        self.setGeometry(100, 100, 865, 450)
+        self.setGeometry(100, 100, 836, 450)
         # initialize basic widgets
         self._main = QWidget(self)
         self._plot = QWidget(self._main)
         self._table = QWidget(self._main)
         # initialize data storage
         self._data = []
-        self._seq = 0
         self._last_path = '.'
         # setup and show
-        self.set_ui()
+        self.setup_ui()
         self.setCentralWidget(self._main)
         self.show()
 
-    def set_ui(self):
+    def setup_ui(self):
         """setup menu, option editor, and payoff curve viewer"""
         self._set_menu()
         self._plot = PayoffCurve(dict(x=np.array([]), y=np.array([])), self._main)
@@ -80,7 +79,7 @@ class ApplicationWindow(QMainWindow):
                     self._table.removeRow(0)
 
                 for _row in range(len(_raw_data)):
-                    self._add_row()
+                    self._add()
                     self.__getattribute__(self._table.item(_row, 0).text()).setCurrentIndex(_raw_data[_row][0])
                     self.__getattribute__(self._table.item(_row, 1).text()).setCurrentIndex(_raw_data[_row][1])
                     self._table.item(_row, 2).setText(str(_raw_data[_row][2]) if _raw_data[_row][2] else '--')
@@ -95,7 +94,7 @@ class ApplicationWindow(QMainWindow):
             QMessageBox.warning(self, "Load Portfolio", "No data found in {}".format(_file_path))
 
     def _save(self):
-        _raw_data = self._collect_()
+        _raw_data = self._collect()
 
         if _raw_data:
             _file_path, _file_type = QFileDialog.getSaveFileName(
@@ -140,7 +139,7 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_file)
 
         _config = QMenu("&Config", self)
-        _config.addAction("&Market / Underlying", self._test)
+        _config.addAction("&Pricing Env", self._test)
         self._menu.addMenu(_config)
 
         _help = QMenu("&Help", self)
@@ -151,93 +150,38 @@ class ApplicationWindow(QMainWindow):
     def _add_button_group(self, layout_):
         _hbox = QHBoxLayout()
         _add_btn = QPushButton("Add")
-        _add_btn.clicked.connect(self._add_row)
+        _add_btn.clicked.connect(self._add)
+        _copy_btn = QPushButton("Copy")
+        _copy_btn.clicked.connect(self._copy)
         _delete_btn = QPushButton("Delete")
-        _delete_btn.clicked.connect(self._delete_row)
+        _delete_btn.clicked.connect(self._delete)
         _plot_btn = QPushButton("Plot")
         _plot_btn.clicked.connect(self._do_plot)
         _hbox.addWidget(_add_btn)
+        _hbox.addWidget(_copy_btn)
         _hbox.addWidget(_delete_btn)
         _hbox.addWidget(_plot_btn)
         layout_.addLayout(_hbox)
 
     def _set_table(self):
         self._table = InstTable()
-        self._add_row()
-        self._do_plot()
+        self._add()
+        # self._do_plot()
 
-    def _add_row(self):
-        if isinstance(self._table, QTableWidget):
-            self._table.setRowCount(self._table.rowCount() + 1)
+    def _add(self):
+        self._table.add_row()
 
-        _inst_id = self._inst_id()
+    def _copy(self):
+        self._table.copy_row()
 
-        _wgt_name = "{}_type".format(_inst_id)
-        _type = QTableWidgetItem(_wgt_name)
-        from custom import CustomComboBox
-        _type._wgt = CustomComboBox(wgt_name_=_wgt_name)
-        for _inst_type in InstrumentType:
-            _type._wgt.addItem(_inst_type.name)
-        _type._wgt.setFixedWidth(80)
-        self.__setattr__(_wgt_name, _type._wgt)
-        _type._wgt.changed.connect(self._set_default)
+    def _delete(self):
+        self._table.delete_row()
 
-        _wgt_name = "{}_direction".format(_inst_id)
-        _direction = QTableWidgetItem(_wgt_name)
-        _direction._wgt = QComboBox()
-        for _trans_direction in TransactionDirection:
-            _direction._wgt.addItem(_trans_direction.name)
-        _direction._wgt.setFixedWidth(80)
-        self.__setattr__(_wgt_name, _direction._wgt)
-
-        _strike = QTableWidgetItem(default_param[0]['strike'])
-        _strike.setTextAlignment(Qt.AlignCenter)
-
-        _price = QTableWidgetItem(default_param[0]['price'])
-        _price.setTextAlignment(Qt.AlignCenter)
-
-        _unit = QTableWidgetItem(default_param[0]['unit'])
-        _unit.setTextAlignment(Qt.AlignCenter)
-
-        self._table.setItem(self._table.rowCount() - 1, 0, _type)
-        self._table.setItem(self._table.rowCount() - 1, 1, _direction)
-        self._table.setItem(self._table.rowCount() - 1, 2, _strike)
-        self._table.setItem(self._table.rowCount() - 1, 3, _price)
-        self._table.setItem(self._table.rowCount() - 1, 4, _unit)
-        self._table.setCellWidget(self._table.rowCount() - 1, 0, _type._wgt)
-        self._table.setCellWidget(self._table.rowCount() - 1, 1, _direction._wgt)
-
-    def _delete_row(self):
-        if self._table.rowCount() == 1:
-            QMessageBox.information(self, "Warning", "Only one option left, cannot be deleted.")
-        else:
-            _row = self._table.currentRow()
-            _type = self._table.item(_row, 0).text()
-            self.__delattr__(_type)
-            _direction = self._table.item(_row, 1).text()
-            self.__delattr__(_direction)
-            self._table.removeRow(_row)
-
-    def _collect_(self):
-        _raw_data = []
-        for idx in range(self._table.rowCount()):
-            try:
-                _type = self.__getattribute__(self._table.item(idx, 0).text()).currentIndex()
-                _direction = self.__getattribute__(self._table.item(idx, 1).text()).currentIndex()
-                _strike = self._format(self._table.item(idx, 2).text()) if _type != InstrumentType.STOCK.value else None
-                _price = self._format(self._table.item(idx, 3).text())
-                _unit = self._format(self._table.item(idx, 4).text())
-
-            except ValueError as e:
-                QMessageBox.warning(self, "Collect Input",
-                                    "Invalid input for instrument parameters\nError message: {}".format(str(e)))
-                return None
-
-            _raw_data.append((_type, _direction, _strike, _price, _unit))
-        return _raw_data
+    def _collect(self):
+        return self._table.collect()
 
     def _do_plot(self):
-        _raw_data = self._collect_()
+        _raw_data = self._collect()
         if _raw_data:
             _option = [Instrument.get_inst(InstrumentType(_type), direction_=TransactionDirection(_direction),
                                            strike_=_strike, price_=_price, unit_=_unit)
@@ -246,10 +190,6 @@ class ApplicationWindow(QMainWindow):
             _x, _y = _portfolio.payoff_curve()
             self._plot.update_figure(dict(x=_x, y=_y))
 
-    def _inst_id(self):
-        self._seq += 1
-        return "Inst-{}".format(self._seq)
-
     def _set_default(self, wgt_name_):
         for _row in range(self._table.rowCount()):
             if self._table.item(_row, 0).text() == wgt_name_:
@@ -257,11 +197,6 @@ class ApplicationWindow(QMainWindow):
                 self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
                 self._table.item(_row, 3).setText(default_param[_type_value]['price'])
                 self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
-
-    @staticmethod
-    def _format(string_):
-        _number = float(string_)
-        return _number if _number % 1 else int(_number)
 
     def _test(self):
         pass

@@ -6,6 +6,7 @@ from enum import Enum
 
 class InstParam(Enum):
     """instrument parameters"""
+    InstID = 'InstID'
     InstType = 'InstType'
     InstUnit = 'InstUnit'
     InstPrice = 'InstPrice'
@@ -16,7 +17,11 @@ class InstParam(Enum):
 
 class InstType(Enum):
     """instrument type"""
-    Option = 0
+    CallOption = 'CALL'
+    PutOption = 'PUT'
+
+
+option_type = [InstType.CallOption.value, InstType.PutOption.value]
 
 
 class Instrument(object):
@@ -40,10 +45,10 @@ class Instrument(object):
     def get_inst(cls, inst_dict_):
         """get instrument through instrument dictionary"""
         type_ = inst_dict_.get(InstParam.InstType.value)
-        if type_ == InstType.Option.value:
+        if type_ in option_type:
             from instrument.option import Option
             return Option(inst_dict_)
-        if not type_:
+        if type_ is None:
             raise ValueError("instrument type not specified")
 
     def payoff(self, spot_):

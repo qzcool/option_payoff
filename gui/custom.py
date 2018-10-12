@@ -1,8 +1,8 @@
 # coding=utf-8
 """customized widgets"""
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QComboBox, QSizePolicy
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QComboBox, QSizePolicy, QTableWidgetItem, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -35,3 +35,14 @@ class CustomMplCanvas(FigureCanvas):
     def _plot_figure(self, data_):
         """plot figure using given data"""
         raise NotImplementedError("this method needs to be defined by subclass")
+
+
+class CustomTableWidget(QTableWidget):
+    """customized combo box to return widget name when current index is changed"""
+    rightClicked = pyqtSignal(int)
+
+    def mousePressEvent(self, e):
+        """..."""
+        super(CustomTableWidget, self).mousePressEvent(e)
+        if e.buttons() == Qt.RightButton:
+            self.rightClicked.emit(self.currentRow())
