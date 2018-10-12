@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Option Portfolio Payoff Curve Generator
-Version 1.0.10
+Version 1.1.0 - alpha 1
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of option portfolio.
