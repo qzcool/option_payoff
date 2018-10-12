@@ -1,14 +1,10 @@
 # coding=utf-8
 """
-Option Portfolio Payoff Curve Generator
-Version 1.0.10
+Vanilla Portfolio Payoff Curve Generator
+Version 1.1.0 - alpha 1.1
 Copyright: Tongyan Xu, 2018
 
-This is a simple tool to estimate the payoff curve of option portfolio.
-
-Currently, only vanilla options could be taken into consideration.
-
-Pricing is not available and option price need to be set manually.
+This is a simple tool to estimate the payoff curve of vanilla portfolio.
 """
 
 import sys
@@ -19,39 +15,14 @@ from PyQt5.QtWidgets import QMessageBox, QPushButton, QTableWidget, QTableWidget
 from json import dumps, loads
 from plot import PayoffCurve
 from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
+from gui.table import InstTable
 
 default_param = [None for _type in InstrumentType]
 default_param[InstrumentType.CALL.value] = dict(strike='100', price='0', unit='1')
 default_param[InstrumentType.PUT.value] = dict(strike='100', price='0', unit='1')
 default_param[InstrumentType.STOCK.value] = dict(strike='--', price='100', unit='1')
 
-__help__ = '''
-Instrument Type:
-
-    OPTION - CALL (call option), PUT (put option)
-    STOCK (could also be considered as FORWARD)
-    BOND (still under development)
-
-
-Transaction Direction: LONG & SHORT
-
-
-Other Parameters:
-
-    Strike - strike level for OPTION only
-        * marked as % of underlying ISP
-        * strike level is useless for STOCK
-
-    Price - price level for all instruments
-        * marked as % of underlying ISP
-        * buying price for STOCK
-        * agreeable price in the future for FORWARD
-
-    Unit - unit of each instrument
-        * could be a FLOAT number
-        * should not be NEGATIVE (switch direction)
-
-'''
+__help__ = ''''''
 
 
 class ApplicationWindow(QMainWindow):
@@ -62,13 +33,19 @@ class ApplicationWindow(QMainWindow):
     """
     def __init__(self):
         QMainWindow.__init__(self)
+        # set basic parameters
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Option Portfolio Payoff Curve")
         self.setGeometry(100, 100, 865, 450)
+        # initialize basic widgets
         self._main = QWidget(self)
         self._plot = QWidget(self._main)
         self._table = QWidget(self._main)
+        # initialize data storage
+        self._data = []
         self._seq = 0
+        self._last_path = '.'
+        # setup and show
         self.set_ui()
         self.setCentralWidget(self._main)
         self.show()
@@ -88,12 +65,14 @@ class ApplicationWindow(QMainWindow):
         self._main.setFocus()
 
     def _load(self):
-        _file_path, _file_type = QFileDialog.getOpenFileName(self, "Load Portfolio", '.', "JSON Files (*.json)")
+        _file_path, _file_type = QFileDialog.getOpenFileName(
+            self, "Load Portfolio", self._last_path, "JSON Files (*.json)")
         if not _file_path:
             return
 
         with open(_file_path) as f:
             _raw_data = loads(f.read())
+        self._last_path = _file_path
 
         if _raw_data:
             try:
@@ -119,15 +98,18 @@ class ApplicationWindow(QMainWindow):
         _raw_data = self._collect_()
 
         if _raw_data:
-            _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "JSON Files (*.json)")
+            _file_path, _file_type = QFileDialog.getSaveFileName(
+                self, "Save Portfolio", self._last_path, "JSON Files (*.json)")
             if not _file_path:
                 return
 
             with open(_file_path, 'w') as f:
                 f.write(dumps(_raw_data, indent=4))
+            self._last_path = _file_path
 
     def _export(self):
-        _file_path, _file_type = QFileDialog.getSaveFileName(self, "Save Portfolio", '.', "PNG Files (*.png)")
+        _file_path, _file_type = QFileDialog.getSaveFileName(
+            self, "Save Portfolio", self._last_path, "PNG Files (*.png)")
         if not _file_path:
             return
 
@@ -157,6 +139,10 @@ class ApplicationWindow(QMainWindow):
         _file.addAction("&Quit", self._quit, Qt.CTRL + Qt.Key_Q)
         self._menu.addMenu(_file)
 
+        _config = QMenu("&Config", self)
+        _config.addAction("&Market / Underlying", self._test)
+        self._menu.addMenu(_config)
+
         _help = QMenu("&Help", self)
         _help.addAction("&Help", self._help, Qt.CTRL + Qt.Key_H)
         _help.addAction("&About", self._about, Qt.CTRL + Qt.Key_A)
@@ -176,15 +162,7 @@ class ApplicationWindow(QMainWindow):
         layout_.addLayout(_hbox)
 
     def _set_table(self):
-        self._table = QTableWidget(0, 5)
-        self._table.setHorizontalHeaderLabels(["Type", "Direction", "Strike", "Price", "Unit"])
-        self._table.setColumnWidth(0, 80)
-        self._table.setColumnWidth(1, 80)
-        self._table.setColumnWidth(2, 50)
-        self._table.setColumnWidth(3, 50)
-        self._table.setColumnWidth(4, 50)
-        self._table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self._table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._table = InstTable()
         self._add_row()
         self._do_plot()
 
@@ -284,6 +262,9 @@ class ApplicationWindow(QMainWindow):
     def _format(string_):
         _number = float(string_)
         return _number if _number % 1 else int(_number)
+
+    def _test(self):
+        pass
 
 
 if __name__ == '__main__':
