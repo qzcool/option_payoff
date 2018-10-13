@@ -4,5 +4,8 @@
 
 def float_int(string_):
     """convert string to int or float according to its real feature"""
-    _number = float(string_)
-    return _number if _number % 1 else int(_number)
+    try:
+        _number = float(string_)
+        return _number if _number % 1 else int(_number)
+    except ValueError:
+        return None

@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.0 - beta 1.0
+Version 1.1.0
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.

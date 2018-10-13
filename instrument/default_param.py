@@ -17,6 +17,9 @@ default_param = {
         InstParam.InstCost.value: 0,
         InstParam.OptionMaturity.value: 1,
         InstParam.OptionStrike.value: 100
+    },
+    InstType.Stock.value: {
+        InstParam.InstUnit.value: 1
     }
 }
 

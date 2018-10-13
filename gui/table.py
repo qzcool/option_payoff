@@ -66,7 +66,8 @@ class InstTable(CustomTableWidget):
 
         for _idx, _col in enumerate(table_col):
             if _col[1] in [ColType.String.value, ColType.Number.value]:
-                _content = data_.get(_col[2], default_param[_type][_col[2]]) if data_ else default_param[_type][_col[2]]
+                _default = default_param[_type].get(_col[2], '-')
+                _content = data_.get(_col[2], _default) if data_ else _default
                 _wgt = QTableWidgetItem(str(_content))
                 _wgt.setTextAlignment(Qt.AlignCenter)
                 self.setItem(self.rowCount() - 1, _idx, _wgt)
@@ -143,7 +144,8 @@ class InstTable(CustomTableWidget):
             if _type:
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
-                        self.item(_row, _idx).setText(str(default_param[_type][_col[2]]))
+                        _default = default_param[_type].get(_col[2], '-')
+                        self.item(_row, _idx).setText(str(_default))
                 return
         raise ValueError("missing default value")
 

@@ -18,6 +18,7 @@ class InstType(Enum):
     """instrument type"""
     CallOption = 'CALL'
     PutOption = 'PUT'
+    Stock = 'STOCK'
 
 
 option_type = [InstType.CallOption.value, InstType.PutOption.value]
@@ -47,6 +48,9 @@ class Instrument(object):
         if type_ in option_type:
             from instrument.option import Option
             return Option(inst_dict_)
+        elif type_ == InstType.Stock.value:
+            from instrument.stock import Stock
+            return Stock(inst_dict_)
         if type_ is None:
             raise ValueError("instrument type not specified")
 

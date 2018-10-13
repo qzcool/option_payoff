@@ -6,7 +6,11 @@ from instrument import Instrument
 
 class Stock(Instrument):
     """stock class with basic parameters"""
-    _name = "option"
+    _name = "stock"
+
+    def __init__(self, inst_dict_):
+        super(Stock, self).__init__(inst_dict_)
+        self.price = 100
 
     def payoff(self, spot_):
         """get stock payoff for given spot"""
