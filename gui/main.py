@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.0
+Version 1.1.1
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -165,7 +165,7 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_file)
 
         _config = QMenu("&Config", self)
-        _config.addAction("&Pricing Env", self._pricing_env)
+        _config.addAction("&Pricing Env", self._pricing_env, Qt.CTRL + Qt.Key_P)
         self._menu.addMenu(_config)
 
         _help = QMenu("&Help", self)
