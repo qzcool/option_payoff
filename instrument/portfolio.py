@@ -2,7 +2,7 @@
 """definition of portfolio for payoff estimation"""
 
 import numpy as np
-from instrument import InstType
+from instrument import option_type
 
 
 class Portfolio(object):
@@ -22,7 +22,7 @@ class Portfolio(object):
         return _x, _y
 
     def _x_range(self):
-        _strike_list = [_comp.strike for _comp in self._components if _comp.type == InstType.OPTION.value]
+        _strike_list = [_comp.strike for _comp in self._components if _comp.type in option_type]
         _min = min(_strike_list) if _strike_list else 100
         _max = max(_strike_list) if _strike_list else 100
         return _min, _max

@@ -21,7 +21,6 @@ class Option(Instrument):
 
     def __init__(self, inst_dict_):
         super(Option, self).__init__(inst_dict_)
-        self.type = inst_dict_.get(InstParam.InstType.value)
         self.strike = inst_dict_.get(InstParam.OptionStrike.value)
         self.maturity = inst_dict_.get(InstParam.OptionMaturity.value)
 
@@ -89,7 +88,7 @@ class Option(Instrument):
 
     @maturity.setter
     def maturity(self, maturity_):
-        if maturity_:
+        if maturity_ is not None:
             if not isinstance(maturity_, (int, float)):
                 raise ValueError("type <int> or <float> is required for maturity, not {}".format(type(maturity_)))
             self._maturity = maturity_

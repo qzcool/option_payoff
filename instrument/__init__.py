@@ -9,7 +9,7 @@ class InstParam(Enum):
     InstID = 'InstID'
     InstType = 'InstType'
     InstUnit = 'InstUnit'
-    InstPrice = 'InstPrice'
+    InstCost = 'InstCost'
     OptionType = 'OptionType'
     OptionStrike = 'OptionStrike'
     OptionMaturity = 'OptionMaturity'
@@ -39,7 +39,7 @@ class Instrument(object):
         self._inst_dict = inst_dict_
         self.type = inst_dict_.get(InstParam.InstType.value)
         self.unit = inst_dict_.get(InstParam.InstUnit.value)
-        self.price = inst_dict_.get(InstParam.InstPrice.value)
+        self.price = inst_dict_.get(InstParam.InstCost.value)
 
     @classmethod
     def get_inst(cls, inst_dict_):
@@ -81,7 +81,7 @@ class Instrument(object):
 
     @unit.setter
     def unit(self, unit_):
-        if unit_:
+        if unit_ is not None:
             if not isinstance(unit_, (int, float)):
                 raise ValueError("type <int> is required for unit, not {}".format(type(unit_)))
             self._unit = unit_
@@ -95,7 +95,7 @@ class Instrument(object):
 
     @price.setter
     def price(self, price_):
-        if price_:
+        if price_ is not None:
             if not isinstance(price_, (int, float)):
                 raise ValueError("type <int> or <float> is required for price, not {}".format(type(price_)))
             self._price = price_

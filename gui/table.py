@@ -1,13 +1,13 @@
 # coding=utf-8
 """..."""
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 from enum import Enum
 from gui.custom import CustomComboBox, CustomTableWidget
 from instrument import InstType, InstParam, Instrument
-from instrument.default_param import default_param
+from instrument.default_param import default_param, default_type
 from instrument.parameter import MktParam, EngineMethod
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 
 
 class TableCol(Enum):
@@ -30,7 +30,7 @@ table_col = [
     (TableCol.Strike.value, ColType.Text.value, InstParam.OptionStrike.value, 50),
     (TableCol.Maturity.value, ColType.Text.value, InstParam.OptionMaturity.value, 50),
     (TableCol.Unit.value, ColType.Text.value, InstParam.InstUnit.value, 50),
-    (TableCol.Cost.value, ColType.Text.value, InstParam.InstPrice.value, 50),
+    (TableCol.Cost.value, ColType.Text.value, InstParam.InstCost.value, 50),
 ]
 
 
@@ -51,15 +51,16 @@ class InstTable(CustomTableWidget):
         self._seq += 1
         return "Inst-{}".format(self._seq)
 
-    def add_row(self):
+    def add_row(self, data_=None):
         """..."""
         self.setRowCount(self.rowCount() + 1)
         _id = self._inst_id()
-        _type = InstType.CallOption.value
+        _type = data_.get(InstParam.InstType.value, default_type) if data_ else default_type
 
         for _idx, _col in enumerate(table_col):
             if _col[1] == ColType.Text.value:
-                _wgt = QTableWidgetItem(str(default_param[_type][_col[2]]))
+                _content = data_.get(_col[2], default_param[_type][_col[2]]) if data_ else default_param[_type][_col[2]]
+                _wgt = QTableWidgetItem(str(_content))
                 _wgt.setTextAlignment(Qt.AlignCenter)
                 self.setItem(self.rowCount() - 1, _idx, _wgt)
 
@@ -70,27 +71,18 @@ class InstTable(CustomTableWidget):
                     _wgt._wgt = CustomComboBox(wgt_name_=_wgt_name)
                     for _inst_type in [_t.value for _t in InstType]:
                         _wgt._wgt.addItem(_inst_type)
+                    _wgt._wgt.setCurrentText(_type)
                     _wgt._wgt.setFixedWidth(_col[3])
                     self.__setattr__(_wgt_name, _wgt._wgt)
                     _wgt._wgt.changed.connect(self._set_default)
                     _wgt.setTextAlignment(Qt.AlignCenter)
                     self.setItem(self.rowCount() - 1, _idx, _wgt)
                     self.setCellWidget(self.rowCount() - 1, _idx, _wgt._wgt)
-
-                # elif _col[0] == TableCol.Price.value:
-                #     _wgt_name = '{}_pricer'.format(_id)
-                #     _wgt = QTableWidgetItem(_wgt_name)
-                #     _wgt._wgt = QPushButton("Edit")
-                #     _wgt._wgt.setFixedWidth(_col[3])
-                #     self.__setattr__(_wgt_name, _wgt._wgt)
-                #     self.setItem(self.rowCount() - 1, _idx, _wgt)
-                #     self.setCellWidget(self.rowCount() - 1, _idx, _wgt._wgt)
-
                 else:
-                    raise ValueError
+                    raise ValueError("invalid table column '{}'".format(_col[0]))
 
             else:
-                raise ValueError
+                raise ValueError("invalid column type '{}'".format(_col[1]))
 
     def copy_row(self):
         """..."""
@@ -142,7 +134,7 @@ class InstTable(CustomTableWidget):
                     if _col[1] == ColType.Text.value:
                         self.item(_row, _idx).setText(str(default_param[_type][_col[2]]))
                 return
-        raise ValueError
+        raise ValueError("missing default value")
 
     def _price(self, row_):
         _raw_data = self._collect_row(row_)

@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.0 - alpha 2
+Version 1.1.0 - alpha 3
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -10,17 +10,14 @@ This is a simple tool to estimate the payoff curve of vanilla portfolio.
 import sys
 import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu
-from PyQt5.QtWidgets import QMessageBox, QPushButton, QVBoxLayout, QWidget
-from json import dumps, loads
-from plot import PayoffCurve
-from option import Instrument, InstrumentType, OptionPortfolio, TransactionDirection
+from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
+from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from gui.table import InstTable
+from gui.plot import PayoffCurve
+from instrument import Instrument
+from instrument.portfolio import Portfolio
+from json import dumps, loads
 
-default_param = [None for _type in InstrumentType]
-default_param[InstrumentType.CALL.value] = dict(strike='100', price='0', unit='1')
-default_param[InstrumentType.PUT.value] = dict(strike='100', price='0', unit='1')
-default_param[InstrumentType.STOCK.value] = dict(strike='--', price='100', unit='1')
 
 __help__ = ''''''
 
@@ -78,13 +75,8 @@ class ApplicationWindow(QMainWindow):
                 while self._table.rowCount():
                     self._table.removeRow(0)
 
-                for _row in range(len(_raw_data)):
-                    self._add()
-                    self.__getattribute__(self._table.item(_row, 0).text()).setCurrentIndex(_raw_data[_row][0])
-                    self.__getattribute__(self._table.item(_row, 1).text()).setCurrentIndex(_raw_data[_row][1])
-                    self._table.item(_row, 2).setText(str(_raw_data[_row][2]) if _raw_data[_row][2] else '--')
-                    self._table.item(_row, 3).setText(str(_raw_data[_row][3]))
-                    self._table.item(_row, 4).setText(str(_raw_data[_row][4]))
+                for _row in _raw_data:
+                    self._add(_row)
 
             except Exception as e:
                 QMessageBox.warning(self, "Load Portfolio", "Invalid data in {}\nError Message:{}".format(
@@ -149,27 +141,36 @@ class ApplicationWindow(QMainWindow):
 
     def _add_button_group(self, layout_):
         _hbox = QHBoxLayout()
+
         _add_btn = QPushButton("Add")
         _add_btn.clicked.connect(self._add)
+        _hbox.addWidget(_add_btn)
+
         _copy_btn = QPushButton("Copy")
         _copy_btn.clicked.connect(self._copy)
+        _hbox.addWidget(_copy_btn)
+
         _delete_btn = QPushButton("Delete")
         _delete_btn.clicked.connect(self._delete)
+        _hbox.addWidget(_delete_btn)
+
         _plot_btn = QPushButton("Plot")
         _plot_btn.clicked.connect(self._do_plot)
-        _hbox.addWidget(_add_btn)
-        _hbox.addWidget(_copy_btn)
-        _hbox.addWidget(_delete_btn)
         _hbox.addWidget(_plot_btn)
+
         layout_.addLayout(_hbox)
 
     def _set_table(self):
         self._table = InstTable()
         self._add()
-        # self._do_plot()
+        self._do_plot()
 
-    def _add(self):
-        self._table.add_row()
+    def _add(self, data_=None):
+        try:
+            self._table.add_row(data_)
+        except Exception as e:
+            QMessageBox.warning(
+                self, "Add Instrument", "An error occurred while adding new instrument: {}".format(str(e)))
 
     def _copy(self):
         self._table.copy_row()
@@ -181,22 +182,12 @@ class ApplicationWindow(QMainWindow):
         return self._table.collect()
 
     def _do_plot(self):
-        _raw_data = self._collect()
+        _raw_data = self._table.collect()
         if _raw_data:
-            _option = [Instrument.get_inst(InstrumentType(_type), direction_=TransactionDirection(_direction),
-                                           strike_=_strike, price_=_price, unit_=_unit)
-                       for _type, _direction, _strike, _price, _unit in _raw_data]
-            _portfolio = OptionPortfolio(_option)
+            _option = [Instrument.get_inst(_data) for _data in _raw_data]
+            _portfolio = Portfolio(_option)
             _x, _y = _portfolio.payoff_curve()
             self._plot.update_figure(dict(x=_x, y=_y))
-
-    def _set_default(self, wgt_name_):
-        for _row in range(self._table.rowCount()):
-            if self._table.item(_row, 0).text() == wgt_name_:
-                _type_value = self.__getattribute__(self._table.item(_row, 0).text()).currentIndex()
-                self._table.item(_row, 2).setText(default_param[_type_value]['strike'])
-                self._table.item(_row, 3).setText(default_param[_type_value]['price'])
-                self._table.item(_row, 4).setText(default_param[_type_value]['unit'])
 
     def _test(self):
         pass
