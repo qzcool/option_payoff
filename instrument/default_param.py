@@ -1,8 +1,8 @@
 # coding=utf-8
-"""..."""
+"""dafault value of all parameters"""
 
 from instrument import InstParam, InstType
-from instrument.parameter import MktParam
+from instrument.parameter import EnvParam, EngineMethod, EngineParam
 
 
 default_param = {
@@ -22,7 +22,13 @@ default_param = {
 
 default_type = InstType.CallOption.value
 
-mkt_ud_default_param = {
-    MktParam.RiskFreeRate: 3,
-    MktParam.UdVolatility: 5
+env_default_param = {
+    EnvParam.RiskFreeRate.value: 3,
+    EnvParam.UdVolatility.value: 5,
+    EnvParam.PricingEngine.value: {
+        'engine': EngineMethod.BS.value,
+        'param': {
+            EngineParam.MCIteration.value: 1000000
+        }
+    }
 }

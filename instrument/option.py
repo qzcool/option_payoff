@@ -3,8 +3,8 @@
 
 import numpy as np
 import scipy.stats as sps
-from instrument import Instrument, InstParam, InstType, option_type
-from instrument.parameter import EngineMethod, EngineParam, MktParam
+from instrument import InstParam, InstType, Instrument, option_type
+from instrument.parameter import EngineMethod, EngineParam, EnvParam
 
 
 class Option(Instrument):
@@ -35,7 +35,7 @@ class Option(Instrument):
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
 
-        if _method == EngineMethod.Analytic.value:
+        if _method == EngineMethod.BS.value:
             _d1 = (np.ma.log(100 / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
                   / _vol / np.ma.sqrt(self.maturity)
             _d2 = _d1 - _vol * np.ma.sqrt(self.maturity)
@@ -95,10 +95,10 @@ class Option(Instrument):
 
     @staticmethod
     def _load_market(mkt_dict_):
-        _rate = mkt_dict_.get(MktParam.RiskFreeRate.value)
+        _rate = mkt_dict_.get(EnvParam.RiskFreeRate.value)
         if not isinstance(_rate, (int, float)):
             raise ValueError("type <int> or <float> is required for market risk free rate, not {}".format(type(_rate)))
-        _vol = mkt_dict_.get(MktParam.UdVolatility.value)
+        _vol = mkt_dict_.get(EnvParam.UdVolatility.value)
         if not isinstance(_vol, (int, float)):
             raise ValueError("type <int> or <float> is required for underlying volatility, not {}".format(type(_vol)))
         return _rate / 100, _vol / 100
@@ -136,11 +136,11 @@ if __name__ == '__main__':
     }
 
     mkt = {
-        MktParam.RiskFreeRate.value: rate,
-        MktParam.UdVolatility.value: vol
+        EnvParam.RiskFreeRate.value: rate,
+        EnvParam.UdVolatility.value: vol
     }
 
-    engine_1 = dict(engine=EngineMethod.Analytic.value)
+    engine_1 = dict(engine=EngineMethod.BS.value)
     engine_2 = dict(engine=EngineMethod.MC.value, param={EngineParam.MCIteration.value: iteration})
 
     option_1 = Instrument.get_inst(inst_1)

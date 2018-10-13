@@ -4,16 +4,17 @@
 from enum import Enum
 
 
-class MktParam(Enum):
+class EnvParam(Enum):
     """market parameter"""
     RiskFreeRate = 'RiskFreeRate'
     UdVolatility = 'UdVolatility'
+    PricingEngine = 'PricingEngine'
 
 
 class EngineMethod(Enum):
     """engine evaluation method"""
-    Analytic = 'Analytic'
-    MC = 'MC'
+    BS = 'Black-Scholes'
+    MC = 'Monte-Carlo'
 
 
 class EngineParam(Enum):

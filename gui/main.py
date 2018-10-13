@@ -1,10 +1,12 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.0 - alpha 3
+Version 1.1.0 - beta 1.0
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
+
+Pricing is now available for vanilla option based on Black-Scholes or Monte-Carlo.
 """
 
 import sys
@@ -14,12 +16,41 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow,
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from gui.table import InstTable
 from gui.plot import PayoffCurve
+from gui.pricing_env import PricingEnv
 from instrument import Instrument
+from instrument.default_param import env_default_param
 from instrument.portfolio import Portfolio
 from json import dumps, loads
 
 
-__help__ = ''''''
+__help__ = '''
+Parameters' Instructions:
+
+    1. Strike - strike level of an OPTION
+        * marked as % of underlying ISP
+    
+    2. Maturity - maturity of an OPTION
+        * marked as number of YEARS
+    
+    3. Unit - unit of each instrument
+        * could be a FLOAT number
+        * could be NEGATIVE indicating SHORT position
+    
+    4. Cost - unit cost level of an OPTION
+        * marked as % of underlying ISP
+
+
+Pricing Tips:
+
+    1. Right click an OPTION for auto pricing
+        * right click on the target line
+    
+    2. Edit pricing env in Menu - Config - Pricing Env
+        * risk free rate
+        * underlying volatility
+        * pricing engine
+
+'''
 
 
 class ApplicationWindow(QMainWindow):
@@ -39,7 +70,7 @@ class ApplicationWindow(QMainWindow):
         self._plot = QWidget(self._main)
         self._table = QWidget(self._main)
         # initialize data storage
-        self._data = []
+        self.env_data = env_default_param
         self._last_path = '.'
         # setup and show
         self.setup_ui()
@@ -106,6 +137,9 @@ class ApplicationWindow(QMainWindow):
 
         self._plot.save(_file_path)
 
+    def _pricing_env(self):
+        self._pricing_env = PricingEnv(self)
+
     def _about(self):
         QMessageBox.about(self, "About", __doc__)
 
@@ -131,7 +165,7 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_file)
 
         _config = QMenu("&Config", self)
-        _config.addAction("&Pricing Env", self._test)
+        _config.addAction("&Pricing Env", self._pricing_env)
         self._menu.addMenu(_config)
 
         _help = QMenu("&Help", self)
@@ -161,7 +195,7 @@ class ApplicationWindow(QMainWindow):
         layout_.addLayout(_hbox)
 
     def _set_table(self):
-        self._table = InstTable()
+        self._table = InstTable(self)
         self._add()
         self._do_plot()
 

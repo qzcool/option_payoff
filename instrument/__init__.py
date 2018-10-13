@@ -6,7 +6,6 @@ from enum import Enum
 
 class InstParam(Enum):
     """instrument parameters"""
-    InstID = 'InstID'
     InstType = 'InstType'
     InstUnit = 'InstUnit'
     InstCost = 'InstCost'

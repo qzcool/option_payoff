@@ -2,7 +2,7 @@
 """customized widgets"""
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QComboBox, QSizePolicy, QTableWidgetItem, QTableWidget
+from PyQt5.QtWidgets import QComboBox, QRadioButton, QSizePolicy, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -11,10 +11,23 @@ class CustomComboBox(QComboBox):
     """customized combo box to return widget name when current index is changed"""
     changed = pyqtSignal(str)
 
-    def __init__(self, parent_=None, wgt_name_='CustomComboBox'):
-        super(CustomComboBox, self).__init__(parent_)
+    def __init__(self, wgt_name_='CustomComboBox', *args, **kwargs):
+        super(CustomComboBox, self).__init__(*args, **kwargs)
         self._wgt_name = wgt_name_
         self.currentIndexChanged.connect(self._event)
+
+    def _event(self):
+        self.changed.emit(self._wgt_name)
+
+
+class CustomRadioButton(QRadioButton):
+    """customized radio button to return widget name when check state is changed"""
+    changed = pyqtSignal(str)
+
+    def __init__(self, wgt_name_='CustomComboBox', *args, **kwargs):
+        super(CustomRadioButton, self).__init__(*args, **kwargs)
+        self._wgt_name = wgt_name_
+        self.toggled.connect(self._event)
 
     def _event(self):
         self.changed.emit(self._wgt_name)
@@ -38,7 +51,7 @@ class CustomMplCanvas(FigureCanvas):
 
 
 class CustomTableWidget(QTableWidget):
-    """customized combo box to return widget name when current index is changed"""
+    """customized table widget to enable right click events"""
     rightClicked = pyqtSignal(int)
 
     def mousePressEvent(self, e):
