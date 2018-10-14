@@ -28,6 +28,7 @@ default_type = InstType.CallOption.value
 env_default_param = {
     EnvParam.RiskFreeRate.value: 3,
     EnvParam.UdVolatility.value: 5,
+    EnvParam.CostRounding.value: 2,
     EnvParam.PricingEngine.value: {
         'engine': EngineMethod.BS.value,
         'param': {

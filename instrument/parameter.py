@@ -8,6 +8,7 @@ class EnvParam(Enum):
     """market parameter"""
     RiskFreeRate = 'RiskFreeRate'
     UdVolatility = 'UdVolatility'
+    CostRounding = 'CostRounding'
     PricingEngine = 'PricingEngine'
 
 

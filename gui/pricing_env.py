@@ -16,14 +16,17 @@ class FieldType(Enum):
     Radio = 2
 
 
+fixed_width = 120
+
 env_param = [
-    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "risk free rate (%):", 120, None),
-    (FieldType.Number.value, EnvParam.UdVolatility.value, "underlying vol (%):", 120, None),
-    (FieldType.Radio.value, EnvParam.PricingEngine.value, "pricing engine:", 120, None)
+    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Risk Free Rate (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.UdVolatility.value, "Underlying Vol (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.CostRounding.value, "Cost Rounding:", fixed_width, None),
+    (FieldType.Radio.value, EnvParam.PricingEngine.value, "Pricing Engine:", fixed_width, None)
 ]
 
 engine_param = [
-    (FieldType.Number.value, EngineParam.MCIteration.value, "MC iterations:", 120, EngineMethod.MC.value),
+    (FieldType.Number.value, EngineParam.MCIteration.value, "MC Iterations:", fixed_width, EngineMethod.MC.value),
 ]
 
 
