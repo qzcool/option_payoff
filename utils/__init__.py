@@ -1,6 +1,8 @@
 # coding=utf-8
 """common utility functions"""
 
+import numpy as np
+
 
 def float_int(string_):
     """convert string to int or float according to its real feature"""
@@ -9,3 +11,8 @@ def float_int(string_):
         return _number if _number % 1 else int(_number)
     except ValueError:
         return None
+
+
+def to_continuous_rate(rate_):
+    """shift discrete rate to continuous rate"""
+    return np.ma.log(1 + rate_ / 100) * 100

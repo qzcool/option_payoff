@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.2
+Version 1.1.3
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -46,9 +46,12 @@ Pricing Tips:
         * right click on the target line
     
     2. Edit pricing env in Menu - Config - Pricing Env
-        * risk free rate
-        * underlying volatility
-        * pricing engine
+        2.1 risk free rate (discrete, %, default 3)
+            * will be automatically shifted to continuous term
+            * r_c = (ln(1 + r / 100) - 1) * 100
+        * underlying volatility (%, default 5)
+        * cost rounding (default 2)
+        * pricing engine (default Black-Scholes)
 
 '''
 
