@@ -16,17 +16,19 @@ class FieldType(Enum):
     Radio = 2
 
 
-fixed_width = 120
+fixed_width = 180
 
 env_param = [
-    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Risk Free Rate (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.UdVolatility.value, "Underlying Vol (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.CostRounding.value, "Cost Rounding:", fixed_width, None),
-    (FieldType.Radio.value, EnvParam.PricingEngine.value, "Pricing Engine:", fixed_width, None)
+    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Discrete Risk Free Rate (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.UdVolatility.value, "Ud Volatility (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.UdConDivRate.value, "Ud Con. Dividend Rate (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.CostRounding.value, "Instrument Cost Rounding:", fixed_width, None),
+    (FieldType.Radio.value, EnvParam.PricingEngine.value, "Instrument Pricing Engine:", fixed_width, None)
 ]
 
 engine_param = [
-    (FieldType.Number.value, EngineParam.MCIteration.value, "MC Iterations:", fixed_width, EngineMethod.MC.value),
+    (FieldType.Number.value, EngineParam.MCIteration.value, "Monte-Carlo Iterations:", fixed_width,
+     EngineMethod.MC.value),
 ]
 
 
@@ -69,13 +71,14 @@ class PricingEnv(QDialog):
             _label.setFixedWidth(param_[3])
             _hbox.addWidget(_label)
             _wgt = QLineEdit(self)
-            if default_:
+            _wgt.setAlignment(Qt.AlignRight)
+            if default_ is not None:
                 _wgt.setText(str(default_))
             self.__setattr__(param_[1], _wgt)
             _hbox.addWidget(_wgt)
             self._main_layout.addLayout(_hbox)
 
-            if param_[4]:
+            if param_[4] is not None:
                 try:
                     _parent = self.__getattribute__(param_[4])
                     if not hasattr(_parent, 'param'):
