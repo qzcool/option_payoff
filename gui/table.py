@@ -9,7 +9,7 @@ from gui.custom import CustomComboBox, CustomTableWidget
 from instrument import InstType, InstParam, Instrument
 from instrument.default_param import default_param, default_type
 from instrument.parameter import EnvParam
-from utils import float_int, to_continuous_rate
+from utils import float_int
 
 
 class TableCol(Enum):
@@ -156,8 +156,6 @@ class InstTable(CustomTableWidget):
         _mkt = deepcopy(self._parent.env_data)
         _engine = _mkt.pop(EnvParam.PricingEngine.value)
         _rounding = _mkt.pop(EnvParam.CostRounding.value)
-        # shift discrete rate to continuous rate
-        _mkt[EnvParam.RiskFreeRate.value] = to_continuous_rate(_mkt[EnvParam.RiskFreeRate.value])
         # do pricing
         _inst = Instrument.get_inst(_raw_data)
         _price = _inst.evaluate(_mkt, _engine)

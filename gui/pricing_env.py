@@ -21,7 +21,7 @@ fixed_width = 180
 env_param = [
     (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Discrete Risk Free Rate (%):", fixed_width, None),
     (FieldType.Number.value, EnvParam.UdVolatility.value, "Ud Volatility (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.UdConDivRate.value, "Ud Con. Dividend Rate (%):", fixed_width, None),
+    (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield Ratio (%):", fixed_width, None),
     (FieldType.Number.value, EnvParam.CostRounding.value, "Instrument Cost Rounding:", fixed_width, None),
     (FieldType.Radio.value, EnvParam.PricingEngine.value, "Instrument Pricing Engine:", fixed_width, None)
 ]

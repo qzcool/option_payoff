@@ -15,4 +15,4 @@ def float_int(string_):
 
 def to_continuous_rate(rate_):
     """shift discrete rate to continuous rate"""
-    return np.ma.log(1 + rate_ / 100) * 100
+    return np.ma.log(1 + rate_)
