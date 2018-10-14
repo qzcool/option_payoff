@@ -147,7 +147,7 @@ class InstTable(CustomTableWidget):
                         _default = default_param[_type].get(_col[2], '-')
                         self.item(_row, _idx).setText(str(_default))
                 return
-        raise ValueError("missing default value")
+        raise ValueError("missing default value of {}".format(wgt_name_))
 
     def _price(self, row_):
         # prepare instrument data

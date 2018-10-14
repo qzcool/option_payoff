@@ -41,6 +41,9 @@ class Instrument(object):
         self.unit = inst_dict_.get(InstParam.InstUnit.value)
         self.price = inst_dict_.get(InstParam.InstCost.value)
 
+    def __str__(self):
+        return "{} * {}".format(self.unit, self.type)
+
     @classmethod
     def get_inst(cls, inst_dict_):
         """get instrument through instrument dictionary"""
@@ -56,11 +59,11 @@ class Instrument(object):
 
     def payoff(self, spot_):
         """get instrument payoff for given spot"""
-        raise NotImplementedError
+        raise NotImplementedError("'payoff' method need to be defined in sub-classes")
 
     def evaluate(self, mkt_dict_, engine_):
         """evaluate instrument price on given market"""
-        raise NotImplementedError
+        raise NotImplementedError("'evaluate' method need to be defined in sub-classes")
 
     @property
     def type(self):

@@ -24,6 +24,9 @@ class Option(Instrument):
         self.strike = inst_dict_.get(InstParam.OptionStrike.value)
         self.maturity = inst_dict_.get(InstParam.OptionMaturity.value)
 
+    def __str__(self):
+        return "{} * {} {}, Maturity {}".format(self.unit, self.strike, self.type, self.maturity)
+
     def payoff(self, spot_):
         """get option payoff for given spot"""
         _reference = spot_ - self.strike if self.type == InstType.CallOption.value else self.strike - spot_
