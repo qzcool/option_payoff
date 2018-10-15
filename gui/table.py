@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 from copy import deepcopy
 from enum import Enum
 from gui.custom import CustomComboBox, CustomTableWidget
+from gui.plot import PlotParam
 from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
 from instrument.parameter import EnvParam
@@ -19,6 +20,7 @@ class TableCol(Enum):
     Maturity = 'Maturity'
     Unit = 'Unit'
     Cost = 'Cost'
+    Show = 'Show'
 
 
 class ColType(Enum):
@@ -29,10 +31,11 @@ class ColType(Enum):
 
 
 table_col = [
-    (TableCol.Type.value, ColType.Other.value, InstParam.InstType.value, 80),
-    (TableCol.Strike.value, ColType.Number.value, InstParam.OptionStrike.value, 50),
-    (TableCol.Unit.value, ColType.Number.value, InstParam.InstUnit.value, 50),
-    (TableCol.Cost.value, ColType.Number.value, InstParam.InstCost.value, 50),
+    (TableCol.Type.value, ColType.Other.value, "Type", InstParam.InstType.value, 80),
+    (TableCol.Strike.value, ColType.Number.value, "Strike", InstParam.OptionStrike.value, 50),
+    (TableCol.Unit.value, ColType.Number.value, "Unit", InstParam.InstUnit.value, 50),
+    (TableCol.Cost.value, ColType.Number.value, "Cost", InstParam.InstCost.value, 50),
+    (TableCol.Show.value, ColType.Other.value, "", PlotParam.Show.value, 30),
 ]
 
 
@@ -46,10 +49,10 @@ class InstTable(CustomTableWidget):
     def __init__(self, parent_, *args, **kwargs):
         super(InstTable, self).__init__(0, len(table_col), *args, **kwargs)
         self._parent = parent_
-        self.setHorizontalHeaderLabels([_col[0] for _col in table_col])
+        self.setHorizontalHeaderLabels([_col[2] for _col in table_col])
         for _idx, _col in enumerate(table_col):
-            self.setColumnWidth(_idx, _col[3])
-        self._col_width = sum([_col[3] for _col in table_col])
+            self.setColumnWidth(_idx, _col[4])
+        self._col_width = sum([_col[4] for _col in table_col])
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.rightClicked.connect(self._price)
@@ -66,8 +69,8 @@ class InstTable(CustomTableWidget):
 
         for _idx, _col in enumerate(table_col):
             if _col[1] in [ColType.String.value, ColType.Number.value]:
-                _default = default_param[_type].get(_col[2], '-')
-                _content = data_.get(_col[2], _default) if data_ else _default
+                _default = default_param[_type].get(_col[3], '-')
+                _content = data_.get(_col[3], _default) if data_ else _default
                 _wgt = QTableWidgetItem(str(_content))
                 _wgt.setTextAlignment(Qt.AlignCenter)
                 self.setItem(self.rowCount() - 1, _idx, _wgt)
@@ -80,12 +83,17 @@ class InstTable(CustomTableWidget):
                     for _inst_type in [_t.value for _t in InstType]:
                         _wgt._wgt.addItem(_inst_type)
                     _wgt._wgt.setCurrentText(_type)
-                    _wgt._wgt.setFixedWidth(_col[3])
+                    _wgt._wgt.setFixedWidth(_col[4])
                     self.__setattr__(_wgt_name, _wgt._wgt)
                     _wgt._wgt.changed.connect(self._set_default)
                     _wgt.setTextAlignment(Qt.AlignCenter)
                     self.setItem(self.rowCount() - 1, _idx, _wgt)
                     self.setCellWidget(self.rowCount() - 1, _idx, _wgt._wgt)
+                elif _col[0] == TableCol.Show.value:
+                    _wgt = QTableWidgetItem()
+                    _wgt.setTextAlignment(Qt.AlignCenter)
+                    _wgt.setCheckState(Qt.Unchecked)
+                    self.setItem(self.rowCount() - 1, _idx, _wgt)
                 else:
                     raise ValueError("invalid table column '{}'".format(_col[0]))
 
@@ -100,12 +108,15 @@ class InstTable(CustomTableWidget):
 
         for _idx, _col in enumerate(table_col):
             if _col[1] in [ColType.String.value, ColType.Number.value]:
-                self.item(self.rowCount() - 1, _idx).setText(str(_raw_data[_col[2]]))
+                self.item(self.rowCount() - 1, _idx).setText(str(_raw_data[_col[3]]))
 
             elif _col[1] == ColType.Other.value:
                 if _col[0] == TableCol.Type.value:
                     self.__getattribute__(
-                        self.item(self.rowCount() - 1, _idx).text()).setCurrentText(_raw_data[_col[2]])
+                        self.item(self.rowCount() - 1, _idx).text()).setCurrentText(_raw_data[_col[3]])
+                elif _col[0] == TableCol.Show.value:
+                    self.item(self.rowCount() - 1, _idx).setCheckState(
+                        Qt.Checked if _raw_data[_col[3]] else Qt.Unchecked)
 
     def delete_row(self):
         """delete an instrument"""
@@ -131,14 +142,17 @@ class InstTable(CustomTableWidget):
         for _idx, _col in enumerate(table_col):
             if _col[1] == ColType.String.value:
                 _data = self.item(row_, _idx).text()
-                _data_dict[_col[2]] = _data
+                _data_dict[_col[3]] = _data
             elif _col[1] == ColType.Number.value:
                 _data = float_int(self.item(row_, _idx).text())
-                _data_dict[_col[2]] = _data
+                _data_dict[_col[3]] = _data
             elif _col[1] == ColType.Other.value:
                 if _col[0] == TableCol.Type.value:
                     _data = self.__getattribute__(self.item(row_, _idx).text()).currentText()
-                    _data_dict[_col[2]] = _data
+                    _data_dict[_col[3]] = _data
+                elif _col[0] == TableCol.Show.value:
+                    _data = self.item(row_, _idx).checkState() == Qt.Checked
+                    _data_dict[_col[3]] = _data
         return _data_dict
 
     def _set_default(self, wgt_name_):
@@ -151,8 +165,12 @@ class InstTable(CustomTableWidget):
             if _type:
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
-                        _default = default_param[_type].get(_col[2], '-')
+                        _default = default_param[_type].get(_col[3], '-')
                         self.item(_row, _idx).setText(str(_default))
+                    elif _col[1] == ColType.Other.value:
+                        if _col[0] == TableCol.Show.value:
+                            _default = default_param[_type].get(_col[3], False)
+                            self.item(_row, _idx).setCheckState(Qt.Checked if _default else Qt.Unchecked)
                 return
         raise ValueError("missing default value of {}".format(wgt_name_))
 

@@ -2,7 +2,18 @@
 """plotting template"""
 
 import numpy as np
+from enum import Enum
 from gui.custom import CustomMplCanvas
+
+
+class PlotParam(Enum):
+    """plotting parameters"""
+    Show = 'Show'
+
+
+plot_default_param = {
+    PlotParam.Show.value: False,
+}
 
 
 class PayoffCurve(CustomMplCanvas):
@@ -27,7 +38,8 @@ class PayoffCurve(CustomMplCanvas):
             if _type == "Payoff":
                 self._prepare_payoff(_x, _y)
             for _line in _y:
-                self._axes.plot(_x, _line, 'r')
+                self._axes.plot(_x, _line, "b--", )
+            self._axes.plot(_x, _y[-1], "r", )
 
         self._set_axis(_type)
 

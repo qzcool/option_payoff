@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.11
+Version 1.1.12
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -15,7 +15,7 @@ from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from gui.table import InstTable
-from gui.plot import PayoffCurve
+from gui.plot import PayoffCurve, PlotParam
 from gui.pricing_env import PricingEnv
 from instrument import Instrument
 from instrument.default_param import env_default_param
@@ -73,7 +73,7 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(QRect(100, 100, 548 + self._table.col_width(), 450))
+        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 450))
         self.show()
 
     def setup_ui(self):
@@ -229,17 +229,25 @@ class ApplicationWindow(QMainWindow):
     def _collect(self):
         return self._table.collect()
 
-    def _gen_portfolio(self):
+    def _prepare_data(self):
         _raw_data = self._table.collect()
-        return Portfolio([Instrument.get_inst(_data) for _data in _raw_data]) if _raw_data else None
+        _inst = [Instrument.get_inst(_data) for _data in _raw_data] if _raw_data else []
+        _inst_show = [Instrument.get_inst(_data)
+                      for _data in filter(lambda x: x[PlotParam.Show.value], _raw_data)] if _raw_data else []
+        _portfolio = Portfolio(_inst)
+        _portfolio.set_mkt(self.env_data)
+        _portfolio.set_show(_inst_show)
+        return _portfolio
 
     def _plot_payoff(self):
-        _x, _y = self._gen_portfolio().payoff_curve()
-        self._plot.update_figure(dict(x=_x, y=[_y], type="Payoff"))
+        _portfolio = self._prepare_data()
+        _x, _y = _portfolio.payoff_curve(full_=True)
+        self._plot.update_figure(dict(x=_x, y=_y, type="Payoff"))
 
     def _plot_return(self):
-        _x, _y = self._gen_portfolio().yield_curve(self.env_data)
-        self._plot.update_figure(dict(x=_x, y=[_y], type="Return"))
+        _portfolio = self._prepare_data()
+        _x, _y = _portfolio.yield_curve(full_=True)
+        self._plot.update_figure(dict(x=_x, y=_y, type="Return"))
 
     def _test(self):
         pass
