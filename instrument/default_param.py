@@ -3,7 +3,7 @@
 
 from gui.plot import PlotParam
 from instrument import InstParam, InstType
-from instrument.parameter import EnvParam, EngineMethod, EngineParam
+from instrument.env_param import EnvParam, EngineMethod, EngineParam
 
 
 default_param = {

@@ -4,7 +4,7 @@
 import numpy as np
 import scipy.stats as sps
 from instrument import InstParam, InstType, Instrument, option_type
-from instrument.parameter import EngineMethod, EngineParam, EnvParam
+from instrument.env_param import EngineMethod, EngineParam, EnvParam
 from utils import to_continuous_rate
 
 

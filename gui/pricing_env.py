@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QButtonGroup, QDialog, QDialogButtonBox, QHBoxLayout
 from enum import Enum
 from gui.custom import CustomRadioButton
 from instrument.default_param import env_default_param
-from instrument.parameter import EngineMethod, EngineParam, EnvParam
+from instrument.env_param import EngineMethod, EngineParam, EnvParam
 from utils import float_int
 
 

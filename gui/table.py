@@ -9,7 +9,7 @@ from gui.custom import CustomComboBox, CustomTableWidget
 from gui.plot import PlotParam
 from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
-from instrument.parameter import EnvParam
+from instrument.env_param import EnvParam
 from utils import float_int
 
 

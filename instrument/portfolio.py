@@ -3,7 +3,7 @@
 
 import numpy as np
 from instrument import option_type
-from instrument.parameter import EnvParam
+from instrument.env_param import EnvParam
 from utils import to_continuous_rate
 
 
