@@ -16,6 +16,6 @@ class Stock(Instrument):
         """get stock payoff for given spot"""
         return spot_ * self.unit
 
-    def evaluate(self, mkt_dict_, engine_):
-        """no evaluation needed"""
-        return self.price
+    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """no evaluation needed for stock"""
+        return overwrite_isp_ if overwrite_isp_ else self.price

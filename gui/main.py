@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.2.1
+Version 1.2.2
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -19,7 +19,8 @@ from gui.plot import PayoffCurve, PlotParam
 from gui.pricing_env import PricingEnv
 from instrument import Instrument
 from instrument.default_param import env_default_param
-from instrument.portfolio import Portfolio
+from instrument.env_param import parse_env
+from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
 
 __help__ = '''
@@ -198,12 +199,16 @@ class ApplicationWindow(QMainWindow):
     def _plot_btn_layout(self):
         _hbox = QHBoxLayout()
 
-        _plot_btn = QPushButton("Plot Payoff")
+        _plot_btn = QPushButton("Payoff")
         _plot_btn.clicked.connect(self._plot_payoff)
         _hbox.addWidget(_plot_btn)
 
-        _plot_btn = QPushButton("Plot Return")
-        _plot_btn.clicked.connect(self._plot_return)
+        _plot_btn = QPushButton("Profit")
+        _plot_btn.clicked.connect(self._plot_profit)
+        _hbox.addWidget(_plot_btn)
+
+        _plot_btn = QPushButton("Price")
+        _plot_btn.clicked.connect(self._plot_price)
         _hbox.addWidget(_plot_btn)
 
         return _hbox
@@ -235,19 +240,26 @@ class ApplicationWindow(QMainWindow):
         _inst_show = [Instrument.get_inst(_data)
                       for _data in filter(lambda x: x[PlotParam.Show.value], _raw_data)] if _raw_data else []
         _portfolio = Portfolio(_inst)
-        _portfolio.set_mkt(self.env_data)
+        _mkt, _engine, _rounding = parse_env(self.env_data)
+        _portfolio.set_mkt(_mkt)
+        _portfolio.set_engine(_engine)
         _portfolio.set_show(_inst_show)
         return _portfolio
 
     def _plot_payoff(self):
-        _portfolio = self._prepare_data()
-        _x, _y = _portfolio.payoff_curve(full_=True)
-        self._plot.update_figure(dict(x=_x, y=_y, type="Payoff"))
+        self._plot_impl(CurveType.Payoff.value)
 
-    def _plot_return(self):
+    def _plot_profit(self):
+        self._plot_impl(CurveType.Profit.value)
+
+    def _plot_price(self):
+        self._plot_impl(CurveType.Evaluation.value)
+
+    def _plot_impl(self, type_):
         _portfolio = self._prepare_data()
-        _x, _y = _portfolio.yield_curve(full_=True)
-        self._plot.update_figure(dict(x=_x, y=_y, type="Return"))
+        _x, _y = _portfolio.gen_curve(type_, full_=True)
+        _x_ref = 0 if type_ == CurveType.Profit.value else 100 if _portfolio.has_stock() else 0
+        self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref))
 
     def _test(self):
         pass

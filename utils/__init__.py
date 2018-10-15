@@ -3,6 +3,8 @@
 
 import numpy as np
 
+PRECISION_ZERO = 10 ** -3
+
 
 def float_int(string_):
     """convert string to int or float according to its real feature"""

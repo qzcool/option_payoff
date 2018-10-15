@@ -1,7 +1,6 @@
 # coding=utf-8
 """definition of base instrument"""
 
-import numpy as np
 from enum import Enum
 
 
@@ -62,11 +61,11 @@ class Instrument(object):
         """get instrument payoff for given spot"""
         raise NotImplementedError("'payoff' method need to be defined in sub-classes")
 
-    def yield_t0(self, spot_, rate_, time_):
-        """get instrument yield / return at T0 for given spot"""
-        return self.payoff(spot_) * np.ma.exp(-rate_ * time_) - self.price
+    def profit(self, spot_):
+        """get instrument profit for given spot"""
+        return self.payoff(spot_) - self.unit * self.price
 
-    def evaluate(self, mkt_dict_, engine_):
+    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
         """evaluate instrument price on given market"""
         raise NotImplementedError("'evaluate' method need to be defined in sub-classes")
 

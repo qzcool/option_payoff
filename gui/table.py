@@ -3,13 +3,12 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
-from copy import deepcopy
 from enum import Enum
 from gui.custom import CustomComboBox, CustomTableWidget
 from gui.plot import PlotParam
 from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
-from instrument.env_param import EnvParam
+from instrument.env_param import EnvParam, parse_env
 from utils import float_int
 
 
@@ -188,9 +187,7 @@ class InstTable(CustomTableWidget):
         # prepare instrument data
         _raw_data = self._collect_row_full(row_)
         # prepare pricing environment
-        _mkt = deepcopy(self._parent.env_data)
-        _engine = _mkt.pop(EnvParam.PricingEngine.value)
-        _rounding = _mkt.pop(EnvParam.CostRounding.value)
+        _mkt, _engine, _rounding = parse_env(self._parent.env_data)
         # do pricing
         _inst = Instrument.get_inst(_raw_data)
         _price = _inst.evaluate(_mkt, _engine)

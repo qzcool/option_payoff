@@ -4,6 +4,7 @@
 import numpy as np
 from enum import Enum
 from gui.custom import CustomMplCanvas
+from utils import PRECISION_ZERO
 
 
 class PlotParam(Enum):
@@ -27,26 +28,31 @@ class PayoffCurve(CustomMplCanvas):
         _x = data_.get('x', np.array([]))
         _y = np.array(data_.get('y', [np.array([])]))
         _type = data_.get('type')
+        _x_ref = data_.get('x_ref', 0)
+
         if not _type:
             raise ValueError("plot type is required")
 
         if _x.size and _y.size:
             self._axes.clear()
             self._axes.plot((100, 100), (_y.min(), _y.max()), color="grey", linewidth=1.5)
-            if _y.min() <= 0 <= _y.max():
-                self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
-            if _type == "Payoff":
-                self._prepare_payoff(_x, _y)
-            for _line in _y:
-                self._axes.plot(_x, _line, color="blue", linestyle='--')
-            self._axes.plot(_x, _y[-1], color="red", linestyle='-')
+
+            if _y.min() <= _x_ref <= _y.max() \
+                    or abs(_y.min() - _x_ref) <= PRECISION_ZERO or abs(_y.max() - _x_ref) <= PRECISION_ZERO:
+                self._axes.plot(_x, np.zeros(_x.size) + _x_ref, color="grey", linewidth=1.5)
+
+            if len(_y) > 1:
+                for _line in _y[1:]:
+                    self._axes.plot(_x, _line, color="blue", linestyle='--')
+            self._axes.plot(_x, _y[0], color="red", linestyle='-')
 
         self._set_axis(_type)
 
     def update_figure(self, data_):
         """
         update payoff curve using new data
-        :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
+        :param data_: a dict consists with x (numpy array) and y (list of numpy array)
+            each array should be in same dimension
         """
         self._plot_figure(data_)
         self.draw()
@@ -58,14 +64,9 @@ class PayoffCurve(CustomMplCanvas):
         """
         self.print_png(file_path_)
 
-    def _prepare_payoff(self, x_, y_):
-        if y_.min() <= 100 <= y_.max():
-            self._axes.plot(x_, np.zeros(x_.size) + 100, color="grey", linewidth=1.5)
-
     def _set_axis(self, type_):
         self._axes.set_xlabel("Spot (% of ISP)")
-        _time = "T0" if type_ == "Return" else "T"
         self._axes.set_ylabel(type_)
-        self._axes.set_title("Option Portfolio {} Curve on {}".format(type_, _time))
+        self._axes.set_title("Option Portfolio {} Curve".format(type_))
         self._axes.grid(axis='x', linewidth=0.75, linestyle='-', color='0.75')
         self._axes.grid(axis='y', linewidth=0.75, linestyle='-', color='0.75')

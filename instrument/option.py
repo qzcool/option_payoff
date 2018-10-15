@@ -33,17 +33,18 @@ class Option(Instrument):
         _reference = spot_ - self.strike if self.type == InstType.CallOption.value else self.strike - spot_
         return max([_reference, 0]) * self.unit
 
-    def evaluate(self, mkt_dict_, engine_):
+    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
         """do option pricing with market data and engine"""
         _rate, _vol, _div = self._load_market(mkt_dict_)
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
+        _isp = overwrite_isp_ if overwrite_isp_ else self._isp
 
         if _method == EngineMethod.BS.value:
-            _d1 = (np.ma.log(self._isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
+            _d1 = (np.ma.log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
                   / _vol / np.ma.sqrt(self.maturity)
             _d2 = _d1 - _vol * np.ma.sqrt(self.maturity)
-            return _sign * (self._isp * np.ma.exp(-_div * self.maturity) * sps.norm.cdf(_sign * _d1) -
+            return _sign * (_isp * np.ma.exp(-_div * self.maturity) * sps.norm.cdf(_sign * _d1) -
                             self.strike * np.ma.exp(-_rate * self.maturity) * sps.norm.cdf(_sign * _d2))
 
         elif _method == EngineMethod.MC.value:
@@ -53,7 +54,7 @@ class Option(Instrument):
             if not isinstance(_iteration, int):
                 raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
             _rand = np.random.normal(0, 1, _iteration)
-            _spot = self._isp * np.ma.exp(
+            _spot = _isp * np.ma.exp(
                 (_rate - _div - _vol ** 2 / 2) * self.maturity + _vol * np.ma.sqrt(self.maturity) * _rand)
             _price = [max(_sign * (_s - self.strike), 0) for _s in _spot]
             return np.average(_price) * np.ma.exp(-_rate * self.maturity)
