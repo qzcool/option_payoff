@@ -40,7 +40,13 @@ class Portfolio(object):
         _y = [np.vectorize(_curve_func)(_x)]
 
         if full_:
-            _y.extend([np.array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
+            if type_ == CurveType.Payoff.value:
+                _y.extend([np.array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
+            elif type_ == CurveType.Profit.value:
+                _y.extend([np.array([_inst.profit(_spot) for _spot in _x]) for _inst in self._components_show])
+            elif type_ == CurveType.Evaluation.value:
+                _y.extend([np.array([_inst.evaluate(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+                           for _inst in self._components_show])
         return _x, _y
 
     def set_show(self, inst_show_):
