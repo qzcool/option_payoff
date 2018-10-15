@@ -1,12 +1,12 @@
 # coding=utf-8
 """
-Vanilla Portfolio Payoff Curve Generator
-Version 1.2.2
+Vanilla Portfolio Ralated Curve Generator
+Version 1.2.3
 Copyright: Tongyan Xu, 2018
 
-This is a simple tool to estimate the payoff curve of vanilla portfolio.
+A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
 
-Pricing is now available for vanilla option based on Black-Scholes or Monte-Carlo.
+Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
 
 import sys
@@ -24,7 +24,7 @@ from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
 
 __help__ = '''
-Parameters' Instructions:
+Instrument Parameters:
 1. Strike - strike level of an OPTION
     * marked as % of underlying ISP
 2. Unit - unit of each instrument
@@ -33,31 +33,36 @@ Parameters' Instructions:
 3. Cost - unit cost level of an OPTION
     * marked as % of underlying ISP
 
+Plotting Choices:
+1. Payoff Curve
+2. Profit Curve
+3. Evaluation Curve
+
 Pricing Tips:
 1. Right click an OPTION for auto pricing
     * right click on the target line
 2. Edit pricing env in Menu - Config - Pricing Env
 
 Pricing Parameters:
-1. risk free rate (discrete, %, default 3)
+1. Risk Free Rate (discrete, %, default 3)
     * will be shifted to continuous term
     * r_c = (ln(1 + r / 100) - 1) * 100
-2. portfolio maturity (y)
+2. Portfolio Maturity (y)
     * marked as number of YEARS
-3. underlying volatility (%, default 5)
-4. dividend yield ratio (discrete, %, default 0)
+3. Underlying Volatility (%, default 5)
+4. Dividend Yield Ratio (discrete, %, default 0)
     * will be shifted to continuous term
     * div_c = (ln(1 + div / 100) - 1) * 100
-5. cost rounding (default 2)
-6. pricing engine (default Black-Scholes)
+5. Cost Rounding (default 2)
+6. Pricing Engine (default Black-Scholes)
 '''
 
 
 class ApplicationWindow(QMainWindow):
     """
     application main window
-    an option editor on the left
-    a payoff curve viewer on the right
+    an instrument editor on the left
+    a curve viewer on the right
     """
     def __init__(self):
         QMainWindow.__init__(self)
@@ -74,7 +79,7 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 450))
+        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 500))
         self.show()
 
     def setup_ui(self):
@@ -84,11 +89,17 @@ class ApplicationWindow(QMainWindow):
         self._set_table()
 
         _main_layout = QHBoxLayout(self._main)
+
         _vbox = QVBoxLayout()
         _vbox.addWidget(self._table)
-        self._add_button_group(_vbox)
+        _vbox.addLayout(self._inst_btn_layout())
         _main_layout.addLayout(_vbox)
-        _main_layout.addWidget(self._plot)
+
+        _vbox = QVBoxLayout()
+        _vbox.addWidget(self._plot)
+        _vbox.addLayout(self._plot_btn_layout())
+        _main_layout.addLayout(_vbox)
+
         self._main.setFocus()
 
     def _load(self):
@@ -199,15 +210,15 @@ class ApplicationWindow(QMainWindow):
     def _plot_btn_layout(self):
         _hbox = QHBoxLayout()
 
-        _plot_btn = QPushButton("Payoff")
+        _plot_btn = QPushButton("Payoff Curve")
         _plot_btn.clicked.connect(self._plot_payoff)
         _hbox.addWidget(_plot_btn)
 
-        _plot_btn = QPushButton("Profit")
+        _plot_btn = QPushButton("Profit Curve")
         _plot_btn.clicked.connect(self._plot_profit)
         _hbox.addWidget(_plot_btn)
 
-        _plot_btn = QPushButton("Price")
+        _plot_btn = QPushButton("Evaluation Curve")
         _plot_btn.clicked.connect(self._plot_price)
         _hbox.addWidget(_plot_btn)
 
