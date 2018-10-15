@@ -96,6 +96,8 @@ class Option(Instrument):
         if maturity_ is not None:
             if not isinstance(maturity_, (int, float)):
                 raise ValueError("type <int> or <float> is required for maturity, not {}".format(type(maturity_)))
+            if maturity_ < 0:
+                raise ValueError("non-negative value is required for maturity, not {}".format(maturity_))
             self._maturity = maturity_
 
     @staticmethod

@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.7
+Version 1.1.8
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -63,7 +63,6 @@ class ApplicationWindow(QMainWindow):
         # set basic parameters
         self.setAttribute(Qt.WA_DeleteOnClose)
         self.setWindowTitle("Option Portfolio Payoff Curve")
-        self.setGeometry(100, 100, 836, 450)
         # initialize basic widgets
         self._main = QWidget(self)
         self._plot = QWidget(self._main)
@@ -74,6 +73,7 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
+        self.setGeometry(100, 100, 556 + self._table.col_width(), 450)
         self.show()
 
     def setup_ui(self):
@@ -173,6 +173,12 @@ class ApplicationWindow(QMainWindow):
         self._menu.addMenu(_help)
 
     def _add_button_group(self, layout_):
+        _vbox = QVBoxLayout()
+        _vbox.addLayout(self._inst_btn_layout())
+        _vbox.addLayout(self._plot_btn_layout())
+        layout_.addLayout(_vbox)
+
+    def _inst_btn_layout(self):
         _hbox = QHBoxLayout()
 
         _add_btn = QPushButton("Add")
@@ -187,11 +193,16 @@ class ApplicationWindow(QMainWindow):
         _delete_btn.clicked.connect(self._delete)
         _hbox.addWidget(_delete_btn)
 
+        return _hbox
+
+    def _plot_btn_layout(self):
+        _hbox = QHBoxLayout()
+
         _plot_btn = QPushButton("Plot")
         _plot_btn.clicked.connect(self._do_plot)
         _hbox.addWidget(_plot_btn)
 
-        layout_.addLayout(_hbox)
+        return _hbox
 
     def _set_table(self):
         self._table = InstTable(self)
@@ -217,8 +228,8 @@ class ApplicationWindow(QMainWindow):
     def _do_plot(self):
         _raw_data = self._table.collect()
         if _raw_data:
-            _option = [Instrument.get_inst(_data) for _data in _raw_data]
-            _portfolio = Portfolio(_option)
+            _inst = [Instrument.get_inst(_data) for _data in _raw_data]
+            _portfolio = Portfolio(_inst)
             _x, _y = _portfolio.payoff_curve()
             self._plot.update_figure(dict(x=_x, y=_y))
 

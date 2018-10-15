@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 from copy import deepcopy
 from enum import Enum
 from gui.custom import CustomComboBox, CustomTableWidget
-from instrument import InstType, InstParam, Instrument
+from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
 from instrument.parameter import EnvParam
 from utils import float_int
@@ -31,7 +31,6 @@ class ColType(Enum):
 table_col = [
     (TableCol.Type.value, ColType.Other.value, InstParam.InstType.value, 80),
     (TableCol.Strike.value, ColType.Number.value, InstParam.OptionStrike.value, 50),
-    (TableCol.Maturity.value, ColType.Number.value, InstParam.OptionMaturity.value, 50),
     (TableCol.Unit.value, ColType.Number.value, InstParam.InstUnit.value, 50),
     (TableCol.Cost.value, ColType.Number.value, InstParam.InstCost.value, 50),
 ]
@@ -50,13 +49,14 @@ class InstTable(CustomTableWidget):
         self.setHorizontalHeaderLabels([_col[0] for _col in table_col])
         for _idx, _col in enumerate(table_col):
             self.setColumnWidth(_idx, _col[3])
+        self._col_width = sum([_col[3] for _col in table_col])
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.rightClicked.connect(self._price)
 
-    def _inst_id(self):
-        self._seq += 1
-        return "Inst-{}".format(self._seq)
+    def col_width(self):
+        """return width sum of all columns"""
+        return self._col_width
 
     def add_row(self, data_=None):
         """add a new instrument with given or default data"""
@@ -117,7 +117,14 @@ class InstTable(CustomTableWidget):
 
     def collect(self):
         """collect all instruments data"""
-        return [self._collect_row(_row) for _row in range(self.rowCount())]
+        return [self._collect_row_full(_row) for _row in range(self.rowCount())]
+
+    def _collect_row_full(self, row_):
+        _data_dict = self._collect_row(row_)
+        _type = _data_dict.get(InstParam.InstType.value)
+        if _type in option_type:
+            _data_dict[InstParam.OptionMaturity.value] = self._parent.env_data[EnvParam.PortMaturity.value]
+        return _data_dict
 
     def _collect_row(self, row_):
         _data_dict = dict()
@@ -151,7 +158,7 @@ class InstTable(CustomTableWidget):
 
     def _price(self, row_):
         # prepare instrument data
-        _raw_data = self._collect_row(row_)
+        _raw_data = self._collect_row_full(row_)
         # prepare pricing environment
         _mkt = deepcopy(self._parent.env_data)
         _engine = _mkt.pop(EnvParam.PricingEngine.value)
@@ -162,3 +169,7 @@ class InstTable(CustomTableWidget):
         for _idx, _col in enumerate(table_col):
             if _col[0] == TableCol.Cost.value:
                 self.item(row_, _idx).setText(str(round(_price, _rounding)))
+
+    def _inst_id(self):
+        self._seq += 1
+        return "Inst-{}".format(self._seq)

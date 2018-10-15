@@ -9,6 +9,7 @@ class EnvParam(Enum):
     RiskFreeRate = 'RiskFreeRate'
     UdVolatility = 'UdVolatility'
     UdDivYieldRatio = 'UdDivYieldRatio'
+    PortMaturity = 'PortMaturity'
     CostRounding = 'CostRounding'
     PricingEngine = 'PricingEngine'
 
