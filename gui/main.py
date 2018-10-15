@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.9
+Version 1.1.10
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -73,13 +73,13 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(100, 100, 556 + self._table.col_width(), 450)
+        self.setGeometry(100, 100, 548 + self._table.col_width(), 450)
         self.show()
 
     def setup_ui(self):
         """setup menu, option editor, and payoff curve viewer"""
         self._set_menu()
-        self._plot = PayoffCurve(dict(x=np.array([]), y=np.array([])), self._main)
+        self._plot = PayoffCurve(dict(x=np.array([]), y=np.array([]), type="Payoff"), self._main)
         self._set_table()
 
         _main_layout = QHBoxLayout(self._main)
@@ -198,8 +198,12 @@ class ApplicationWindow(QMainWindow):
     def _plot_btn_layout(self):
         _hbox = QHBoxLayout()
 
-        _plot_btn = QPushButton("Plot")
-        _plot_btn.clicked.connect(self._do_plot)
+        _plot_btn = QPushButton("Plot Payoff")
+        _plot_btn.clicked.connect(self._plot_payoff)
+        _hbox.addWidget(_plot_btn)
+
+        _plot_btn = QPushButton("Plot Return")
+        _plot_btn.clicked.connect(self._plot_return)
         _hbox.addWidget(_plot_btn)
 
         return _hbox
@@ -207,7 +211,7 @@ class ApplicationWindow(QMainWindow):
     def _set_table(self):
         self._table = InstTable(self)
         self._add()
-        self._do_plot()
+        self._plot_payoff()
 
     def _add(self, data_=None):
         try:
@@ -225,13 +229,17 @@ class ApplicationWindow(QMainWindow):
     def _collect(self):
         return self._table.collect()
 
-    def _do_plot(self):
+    def _gen_portfolio(self):
         _raw_data = self._table.collect()
-        if _raw_data:
-            _inst = [Instrument.get_inst(_data) for _data in _raw_data]
-            _portfolio = Portfolio(_inst)
-            _x, _y = _portfolio.payoff_curve()
-            self._plot.update_figure(dict(x=_x, y=_y))
+        return Portfolio([Instrument.get_inst(_data) for _data in _raw_data]) if _raw_data else None
+
+    def _plot_payoff(self):
+        _x, _y = self._gen_portfolio().payoff_curve()
+        self._plot.update_figure(dict(x=_x, y=_y, type="Payoff"))
+
+    def _plot_return(self):
+        _x, _y = self._gen_portfolio().yield_curve(self.env_data)
+        self._plot.update_figure(dict(x=_x, y=_y, type="Return"))
 
     def _test(self):
         pass

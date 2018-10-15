@@ -15,15 +15,20 @@ class PayoffCurve(CustomMplCanvas):
         """
         _x = data_.get('x', np.array([]))
         _y = data_.get('y', np.array([]))
+        _type = data_.get('type')
+        if not _type:
+            raise ValueError("plot type is required")
+
         if _x.size and _y.size:
             self._axes.clear()
             self._axes.plot(np.linspace(100, 100, _y.size), _y, color="grey", linewidth=1.5)
             if _y.min() <= 0 <= _y.max():
                 self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
-            elif _y.min() <= 100 <= _y.max():
-                self._axes.plot(_x, np.zeros(_x.size) + 100, color="grey", linewidth=1.5)
+            if _type == "Payoff":
+                self._prepare_payoff(_x, _y)
             self._axes.plot(_x, _y, 'r')
-        self._set_axis("Payoff")
+
+        self._set_axis(_type)
 
     def update_figure(self, data_):
         """
@@ -39,6 +44,10 @@ class PayoffCurve(CustomMplCanvas):
         :param file_path_: a str indicating path to save figure file
         """
         self.print_png(file_path_)
+
+    def _prepare_payoff(self, x_, y_):
+        if y_.min() <= 100 <= y_.max():
+            self._axes.plot(x_, np.zeros(x_.size) + 100, color="grey", linewidth=1.5)
 
     def _set_axis(self, type_):
         self._axes.set_xlabel("Spot (% of ISP)")
