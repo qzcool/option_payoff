@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.10
+Version 1.1.11
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -11,7 +11,7 @@ Pricing is now available for vanilla option based on Black-Scholes or Monte-Carl
 
 import sys
 import numpy as np
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from gui.table import InstTable
@@ -73,7 +73,7 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(100, 100, 548 + self._table.col_width(), 450)
+        self.setGeometry(QRect(100, 100, 548 + self._table.col_width(), 450))
         self.show()
 
     def setup_ui(self):
@@ -235,11 +235,11 @@ class ApplicationWindow(QMainWindow):
 
     def _plot_payoff(self):
         _x, _y = self._gen_portfolio().payoff_curve()
-        self._plot.update_figure(dict(x=_x, y=_y, type="Payoff"))
+        self._plot.update_figure(dict(x=_x, y=[_y], type="Payoff"))
 
     def _plot_return(self):
         _x, _y = self._gen_portfolio().yield_curve(self.env_data)
-        self._plot.update_figure(dict(x=_x, y=_y, type="Return"))
+        self._plot.update_figure(dict(x=_x, y=[_y], type="Return"))
 
     def _test(self):
         pass

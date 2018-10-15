@@ -14,19 +14,20 @@ class PayoffCurve(CustomMplCanvas):
         :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
         """
         _x = data_.get('x', np.array([]))
-        _y = data_.get('y', np.array([]))
+        _y = np.array(data_.get('y', [np.array([])]))
         _type = data_.get('type')
         if not _type:
             raise ValueError("plot type is required")
 
         if _x.size and _y.size:
             self._axes.clear()
-            self._axes.plot(np.linspace(100, 100, _y.size), _y, color="grey", linewidth=1.5)
+            self._axes.plot((100, 100), (_y.min(), _y.max()), color="grey", linewidth=1.5)
             if _y.min() <= 0 <= _y.max():
                 self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
             if _type == "Payoff":
                 self._prepare_payoff(_x, _y)
-            self._axes.plot(_x, _y, 'r')
+            for _line in _y:
+                self._axes.plot(_x, _line, 'r')
 
         self._set_axis(_type)
 
