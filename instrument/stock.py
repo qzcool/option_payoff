@@ -14,7 +14,7 @@ class Stock(Instrument):
 
     def payoff(self, spot_):
         """get stock payoff for given spot"""
-        return (spot_ - self.price) * self.unit
+        return spot_ * self.unit
 
     def evaluate(self, mkt_dict_, engine_):
         """no evaluation needed"""

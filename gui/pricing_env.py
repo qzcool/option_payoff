@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QButtonGroup, QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QVBoxLayout, QLineEdit
 from enum import Enum
 from gui.custom import CustomRadioButton
+from instrument.default_param import env_default_param
 from instrument.parameter import EngineMethod, EngineParam, EnvParam
 from utils import float_int
 
@@ -58,8 +59,9 @@ class PricingEnv(QDialog):
                                      default=self._parent.env_data[EnvParam.PricingEngine.value]['param']))
             else:
                 self._add_param(_param, self._parent.env_data[_param[1]])
-        _btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        _btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Reset)
         _btn.button(QDialogButtonBox.Ok).setDefault(True)
+        _btn.button(QDialogButtonBox.Reset).clicked.connect(self._on_reset)
         _btn.accepted.connect(self._on_ok)
         _btn.rejected.connect(self.reject)
         self._main_layout.addWidget(_btn)
@@ -136,6 +138,27 @@ class PricingEnv(QDialog):
                 _env[_param[1]] = self._get_wgt_value(_param[1], _param[0])
         self._parent.env_data = _env
         self.accept()
+
+    def _on_reset(self):
+        for _param in env_param:
+            if _param[1] == EnvParam.PricingEngine.value:
+                self._set_wgt_value(_param[1], _param[0], env_default_param[_param[1]]['engine'])
+                for _engine_param in engine_param:
+                    self._set_wgt_value(
+                        _engine_param[1], _engine_param[0], env_default_param[_param[1]]['param'][_engine_param[1]])
+            else:
+                self._set_wgt_value(_param[1], _param[0], env_default_param[_param[1]])
+
+    def _set_wgt_value(self, wgt_name_, wgt_type_, value_):
+        _wgt = self.__getattribute__(wgt_name_)
+        if wgt_type_ in [FieldType.String.value, FieldType.Number.value]:
+            _wgt.setText(str(value_))
+        elif wgt_type_ == FieldType.Radio.value:
+            for _btn in _wgt.buttons():
+                if _btn.name() == value_:
+                    _btn.setChecked(True)
+        else:
+            raise ValueError("invalid widget type {}".format(wgt_type_))
 
     def _get_wgt_value(self, wgt_name_, wgt_type_):
         _wgt = self.__getattribute__(wgt_name_)

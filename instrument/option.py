@@ -19,7 +19,6 @@ class Option(Instrument):
     _isp = 100
     _strike = None
     _maturity = None
-    _ud_vol = None
 
     def __init__(self, inst_dict_):
         super(Option, self).__init__(inst_dict_)
@@ -32,7 +31,7 @@ class Option(Instrument):
     def payoff(self, spot_):
         """get option payoff for given spot"""
         _reference = spot_ - self.strike if self.type == InstType.CallOption.value else self.strike - spot_
-        return (max([_reference, 0]) - self.price) * self.unit
+        return max([_reference, 0]) * self.unit
 
     def evaluate(self, mkt_dict_, engine_):
         """do option pricing with market data and engine"""

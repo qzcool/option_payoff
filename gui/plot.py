@@ -20,8 +20,10 @@ class PayoffCurve(CustomMplCanvas):
             self._axes.plot(np.linspace(100, 100, _y.size), _y, color="grey", linewidth=1.5)
             if _y.min() <= 0 <= _y.max():
                 self._axes.plot(_x, np.zeros(_x.size), color="grey", linewidth=1.5)
+            elif _y.min() <= 100 <= _y.max():
+                self._axes.plot(_x, np.zeros(_x.size) + 100, color="grey", linewidth=1.5)
             self._axes.plot(_x, _y, 'r')
-        self._set_axis()
+        self._set_axis("Payoff")
 
     def update_figure(self, data_):
         """
@@ -38,9 +40,10 @@ class PayoffCurve(CustomMplCanvas):
         """
         self.print_png(file_path_)
 
-    def _set_axis(self):
-        self._axes.set_xlabel("Spot")
-        self._axes.set_ylabel("Payoff")
-        self._axes.set_title("Option Portfolio Payoff Curve")
+    def _set_axis(self, type_):
+        self._axes.set_xlabel("Spot (% of ISP)")
+        _time = "T0" if type_ == "Return" else "T"
+        self._axes.set_ylabel(type_)
+        self._axes.set_title("Option Portfolio {} Curve on {}".format(type_, _time))
         self._axes.grid(axis='x', linewidth=0.75, linestyle='-', color='0.75')
         self._axes.grid(axis='y', linewidth=0.75, linestyle='-', color='0.75')

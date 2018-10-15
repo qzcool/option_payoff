@@ -16,6 +16,10 @@ class CustomComboBox(QComboBox):
         self._wgt_name = wgt_name_
         self.currentIndexChanged.connect(self._event)
 
+    def name(self):
+        """return widget name"""
+        return self._wgt_name
+
     def _event(self):
         self.changed.emit(self._wgt_name)
 
@@ -28,6 +32,10 @@ class CustomRadioButton(QRadioButton):
         super(CustomRadioButton, self).__init__(*args, **kwargs)
         self._wgt_name = wgt_name_
         self.toggled.connect(self._event)
+
+    def name(self):
+        """return widget name"""
+        return self._wgt_name
 
     def _event(self):
         self.changed.emit(self._wgt_name)
