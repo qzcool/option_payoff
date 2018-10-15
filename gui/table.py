@@ -157,6 +157,8 @@ class InstTable(CustomTableWidget):
         raise ValueError("missing default value of {}".format(wgt_name_))
 
     def _price(self, row_):
+        if row_ == -1:
+            return
         # prepare instrument data
         _raw_data = self._collect_row_full(row_)
         # prepare pricing environment
