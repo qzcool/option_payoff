@@ -38,8 +38,8 @@ class PayoffCurve(CustomMplCanvas):
             if _type == "Payoff":
                 self._prepare_payoff(_x, _y)
             for _line in _y:
-                self._axes.plot(_x, _line, "b--", )
-            self._axes.plot(_x, _y[-1], "r", )
+                self._axes.plot(_x, _line, color="blue", linestyle='--')
+            self._axes.plot(_x, _y[-1], color="red", linestyle='-')
 
         self._set_axis(_type)
 

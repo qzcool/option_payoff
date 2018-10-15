@@ -92,7 +92,7 @@ class InstTable(CustomTableWidget):
                 elif _col[0] == TableCol.Show.value:
                     _wgt = QTableWidgetItem()
                     _wgt.setTextAlignment(Qt.AlignCenter)
-                    _wgt.setCheckState(Qt.Unchecked)
+                    _wgt.setCheckState(Qt.Checked if (data_.get(_col[3], False) if data_ else False) else Qt.Unchecked)
                     self.setItem(self.rowCount() - 1, _idx, _wgt)
                 else:
                     raise ValueError("invalid table column '{}'".format(_col[0]))
