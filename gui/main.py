@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Payoff Curve Generator
-Version 1.1.13
+Version 1.2.0
 Copyright: Tongyan Xu, 2018
 
 This is a simple tool to estimate the payoff curve of vanilla portfolio.
@@ -26,12 +26,10 @@ __help__ = '''
 Parameters' Instructions:
 1. Strike - strike level of an OPTION
     * marked as % of underlying ISP
-2. Maturity - maturity of an OPTION
-    * marked as number of YEARS
-3. Unit - unit of each instrument
+2. Unit - unit of each instrument
     * could be a FLOAT number
     * could be NEGATIVE indicating SHORT position
-4. Cost - unit cost level of an OPTION
+3. Cost - unit cost level of an OPTION
     * marked as % of underlying ISP
 
 Pricing Tips:
@@ -43,12 +41,14 @@ Pricing Parameters:
 1. risk free rate (discrete, %, default 3)
     * will be shifted to continuous term
     * r_c = (ln(1 + r / 100) - 1) * 100
-2. underlying volatility (%, default 5)
-3. dividend yield ratio (discrete, %, default 0)
+2. portfolio maturity (y)
+    * marked as number of YEARS
+3. underlying volatility (%, default 5)
+4. dividend yield ratio (discrete, %, default 0)
     * will be shifted to continuous term
     * div_c = (ln(1 + div / 100) - 1) * 100
-4. cost rounding (default 2)
-5. pricing engine (default Black-Scholes)
+5. cost rounding (default 2)
+6. pricing engine (default Black-Scholes)
 '''
 
 

@@ -1,6 +1,7 @@
 # coding=utf-8
 """dafault value of all parameters"""
 
+from gui.plot import PlotParam
 from instrument import InstParam, InstType
 from instrument.parameter import EnvParam, EngineMethod, EngineParam
 
@@ -9,15 +10,18 @@ default_param = {
     InstType.CallOption.value: {
         InstParam.InstUnit.value: 1,
         InstParam.InstCost.value: 0,
-        InstParam.OptionStrike.value: 100
+        InstParam.OptionStrike.value: 100,
+        PlotParam.Show.value: False,
     },
     InstType.PutOption.value: {
         InstParam.InstUnit.value: 1,
         InstParam.InstCost.value: 0,
-        InstParam.OptionStrike.value: 100
+        InstParam.OptionStrike.value: 100,
+        PlotParam.Show.value: False,
     },
     InstType.Stock.value: {
-        InstParam.InstUnit.value: 1
+        InstParam.InstUnit.value: 1,
+        PlotParam.Show.value: False,
     }
 }
 

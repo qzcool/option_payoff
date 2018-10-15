@@ -77,4 +77,4 @@ class Portfolio(object):
         _maturity = set([_comp.maturity for _comp in self._components if _comp.type in option_type])
         if len(_maturity) > 1:
             raise ValueError("maturity of all components should be same")
-        return _maturity.pop() if len(_maturity) == 1 else None
+        return _maturity.pop() if len(_maturity) == 1 else 0
