@@ -2,9 +2,26 @@
 """customized widgets"""
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QComboBox, QRadioButton, QSizePolicy, QTableWidget
+from PyQt5.QtWidgets import QCheckBox, QComboBox, QRadioButton, QSizePolicy, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+
+class CustomCheckBox(QCheckBox):
+    """customized check box to return widget name and value when current check state is changed"""
+    changed = pyqtSignal(str, bool)
+
+    def __init__(self, wgt_name_='CustomCheckBox', *args, **kwargs):
+        super(CustomCheckBox, self).__init__(*args, **kwargs)
+        self._wgt_name = wgt_name_
+        self.stateChanged.connect(self._event)
+
+    def name(self):
+        """return widget name"""
+        return self._wgt_name
+
+    def _event(self):
+        self.changed.emit(self._wgt_name, self.checkState())
 
 
 class CustomComboBox(QComboBox):
@@ -28,7 +45,7 @@ class CustomRadioButton(QRadioButton):
     """customized radio button to return widget name when check state is changed"""
     changed = pyqtSignal(str)
 
-    def __init__(self, wgt_name_='CustomComboBox', *args, **kwargs):
+    def __init__(self, wgt_name_='CustomRadioButton', *args, **kwargs):
         super(CustomRadioButton, self).__init__(*args, **kwargs)
         self._wgt_name = wgt_name_
         self.toggled.connect(self._event)

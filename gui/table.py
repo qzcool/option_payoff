@@ -4,7 +4,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 from enum import Enum
-from gui.custom import CustomComboBox, CustomTableWidget
+from gui.custom import CustomCheckBox, CustomComboBox, CustomTableWidget
 from gui.plot import PlotParam
 from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
@@ -180,6 +180,29 @@ class InstTable(CustomTableWidget):
                         pass
                 return
         raise ValueError("missing default value of {}".format(wgt_name_))
+
+    def _set_header(self):
+        for _idx, _col in enumerate(table_col):
+            _wgt = QTableWidgetItem(_col[2])
+            if _col[1] in [ColType.String.value, ColType.Number.value]:
+                pass
+            elif _col[1] == ColType.Boolean.value:
+                _check = CustomCheckBox(str(_idx))
+                _check.setCheckState(Qt.Unchecked)
+                _check.changed.connect(self._on_check_all)
+            elif _col[1] == ColType.Other.value:
+                if _col[0] == TableCol.Type.value:
+                    pass
+                else:
+                    raise ValueError()
+            else:
+                raise ValueError()
+            self.setHorizontalHeaderItem(_idx, _wgt)
+
+    def _on_check_all(self, wgt_name_, check_state_):
+        _idx = int(wgt_name_)
+        for _row in range(self.rowCount()):
+            self.item(_row, _idx).setCheckState(check_state_)
 
     def _price(self, row_):
         if row_ == -1:

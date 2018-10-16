@@ -30,7 +30,7 @@ default_type = InstType.CallOption.value
 env_default_param = {
     EnvParam.RiskFreeRate.value: 3,
     EnvParam.PortMaturity.value: 1,
-    EnvParam.UdVolatility.value: 5,
+    EnvParam.UdVolatility.value: 30,
     EnvParam.UdDivYieldRatio.value: 0,
     EnvParam.CostRounding.value: 2,
     EnvParam.PricingEngine.value: {

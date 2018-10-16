@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.5
+Version 1.2.6
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
@@ -49,7 +49,7 @@ Pricing Parameters:
     * r_c = (ln(1 + r / 100) - 1) * 100
 2. Portfolio Maturity (y)
     * marked as number of YEARS
-3. Underlying Volatility (%, default 5)
+3. Underlying Volatility (%, default 30)
 4. Dividend Yield Ratio (discrete, %, default 0)
     * will be shifted to continuous term
     * div_c = (ln(1 + div / 100) - 1) * 100
