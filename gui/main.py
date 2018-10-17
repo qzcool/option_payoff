@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.6
+Version 1.2.7
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.

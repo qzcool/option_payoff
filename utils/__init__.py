@@ -18,3 +18,8 @@ def float_int(string_):
 def to_continuous_rate(rate_):
     """shift discrete rate to continuous rate"""
     return np.ma.log(1 + rate_)
+
+
+def parse_kwargs(kwargs_, parse_list_, alternative_=None):
+    """parse kwargs with given parse keys"""
+    return tuple([kwargs_.get(_key, alternative_) for _key in parse_list_])

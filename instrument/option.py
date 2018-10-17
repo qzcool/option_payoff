@@ -48,14 +48,13 @@ class Option(Instrument):
                             self.strike * np.ma.exp(-_rate * self.maturity) * sps.norm.cdf(_sign * _d2))
 
         elif _method == EngineMethod.MC.value:
+            from utils.monte_carlo import MonteCarlo
             _iteration = _param.get(EngineParam.MCIteration.value)
             if not _iteration:
                 raise ValueError("iteration not specified")
             if not isinstance(_iteration, int):
                 raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
-            _rand = np.random.normal(0, 1, _iteration)
-            _spot = _isp * np.ma.exp(
-                (_rate - _div - _vol ** 2 / 2) * self.maturity + _vol * np.ma.sqrt(self.maturity) * _rand)
+            _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
             _price = [max(_sign * (_s - self.strike), 0) for _s in _spot]
             return np.average(_price) * np.ma.exp(-_rate * self.maturity)
 

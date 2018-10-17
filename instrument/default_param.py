@@ -1,5 +1,5 @@
 # coding=utf-8
-"""dafault value of all parameters"""
+"""default value of all parameters"""
 
 from gui.plot import PlotParam
 from instrument import InstParam, InstType
