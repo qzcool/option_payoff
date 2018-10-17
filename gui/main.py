@@ -1,10 +1,10 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.12
+Version 1.2.13
 Copyright: Tongyan Xu, 2018
 
-A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
+A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
 
 Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
@@ -14,6 +14,7 @@ import numpy as np
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from gui.help import HelpDialog
 from gui.table import InstTable
 from gui.plot import PayoffCurve, PlotParam
 from gui.pricing_env import PricingEnv, parse_env
@@ -22,39 +23,6 @@ from instrument.default_param import env_default_param
 from instrument.env_param import EngineMethod
 from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
-
-__help__ = '''
-Instrument Parameters:
-1. Strike - strike price of an OPTION
-2. Unit - unit of each instrument
-    * could be a FLOAT number
-    * could be NEGATIVE indicating SHORT position
-3. Cost - unit cost of an OPTION
-
-Plotting Choices:
-1. Payoff Curve
-2. Profit Curve
-3. PV Curve
-4. Delta Curve
-
-Pricing Tips:
-1. Right click an OPTION for auto pricing
-    * right click on the target line
-2. Edit pricing env in Menu - Config - Pricing Env
-
-Pricing Parameters:
-1. Annual Risk Free Rate (%, default 3)
-2. Underlying Volatility (%, default 30)
-3. Dividend Yield Ratio (%, default 0)
-4. Portfolio Maturity (y)
-5. Cost Rounding (default 2)
-6. Rate Format (default Single)
-    * Single or Compound (continuous)
-    * if Single is chosen, 1 & 3 will shifted via:
-    * r_c = (ln(1 + r / 100) - 1) * 100
-7. Pricing Engine (default Black-Scholes)
-    * Black-Scholes or Monte-Carlo
-'''
 
 
 class ApplicationWindow(QMainWindow):
@@ -72,6 +40,8 @@ class ApplicationWindow(QMainWindow):
         self._main = QWidget(self)
         self._plot = QWidget(self._main)
         self._table = QWidget(self._main)
+        self._env_box = None
+        self._help_box = None
         # initialize data storage
         self.env_data = env_default_param
         self._last_path = '.'
@@ -153,13 +123,13 @@ class ApplicationWindow(QMainWindow):
         self._plot.save(_file_path)
 
     def _pricing_env(self):
-        self._pricing_env = PricingEnv(self)
+        self._env_box = PricingEnv(self)
 
     def _about(self):
         QMessageBox.about(self, "About", __doc__)
 
     def _help(self):
-        QMessageBox.about(self, "Help", __help__)
+        self._help_box = HelpDialog(self)
 
     def _quit(self):
         self.close()
