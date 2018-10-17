@@ -103,8 +103,6 @@ class InstTable(CustomTableWidget):
             else:
                 raise ValueError("invalid column type '{}'".format(_col[1]))
 
-        self._set_default('{}_type'.format(_id))
-
     def copy_row(self):
         """copy an existing instrument and create a new one"""
         self.add_row()

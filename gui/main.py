@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.11
+Version 1.2.12
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
@@ -78,7 +78,7 @@ class ApplicationWindow(QMainWindow):
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 500))
+        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 480))
         self.show()
 
     def setup_ui(self):
@@ -108,10 +108,14 @@ class ApplicationWindow(QMainWindow):
             return
 
         with open(_file_path) as f:
-            _raw_data = loads(f.read())
+            _input_data = loads(f.read())
         self._last_path = _file_path
 
-        if _raw_data:
+        _raw_data = _input_data.get('data')
+        _env = _input_data.get('env')
+
+        if _raw_data and _env:
+            self.env_data = _env
             try:
                 while self._table.rowCount():
                     self._table.removeRow(0)
@@ -128,6 +132,7 @@ class ApplicationWindow(QMainWindow):
 
     def _save(self):
         _raw_data = self._collect()
+        _output = dict(data=_raw_data, env=self.env_data)
 
         if _raw_data:
             _file_path, _file_type = QFileDialog.getSaveFileName(
@@ -136,7 +141,7 @@ class ApplicationWindow(QMainWindow):
                 return
 
             with open(_file_path, 'w') as f:
-                f.write(dumps(_raw_data, indent=4))
+                f.write(dumps(_output, indent=4))
             self._last_path = _file_path
 
     def _export(self):
