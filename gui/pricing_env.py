@@ -3,10 +3,11 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QButtonGroup, QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QVBoxLayout, QLineEdit
+from copy import deepcopy
 from enum import Enum
 from gui.custom import CustomRadioButton
 from instrument.default_param import env_default_param
-from instrument.env_param import EngineMethod, EngineParam, EnvParam
+from instrument.env_param import EngineMethod, EngineParam, EnvParam, RateFormat
 from utils import float_int
 
 
@@ -20,18 +21,24 @@ class FieldType(Enum):
 fixed_width = 180
 
 env_param = [
-    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Discrete Risk Free Rate (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.UdVolatility.value, "Ud Volatility (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield Ratio (%):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.UdInitialPrice.value, "Ud Initial Share Price:", fixed_width, None),
-    (FieldType.Number.value, EnvParam.PortMaturity.value, "Portfolio Maturity (Y):", fixed_width, None),
-    (FieldType.Number.value, EnvParam.CostRounding.value, "Instrument Cost Rounding:", fixed_width, None),
-    (FieldType.Radio.value, EnvParam.PricingEngine.value, "Instrument Pricing Engine:", fixed_width, None),
-]
-
-engine_param = [
+    (FieldType.Number.value, EnvParam.RiskFreeRate.value, "Annual Risk Free Rate (%):", fixed_width,
+     None, None, None),
+    (FieldType.Number.value, EnvParam.UdVolatility.value, "Ud Volatility (%):", fixed_width,
+     None, None, None),
+    (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield Ratio (%):", fixed_width,
+     None, None, None),
+    (FieldType.Number.value, EnvParam.UdInitialPrice.value, "Ud Initial Share Price:", fixed_width,
+     None, None, None),
+    (FieldType.Number.value, EnvParam.PortMaturity.value, "Portfolio Maturity (Y):", fixed_width,
+     None, None, None),
+    (FieldType.Number.value, EnvParam.CostRounding.value, "Instrument Cost Rounding:", fixed_width,
+     None, None, None),
+    (FieldType.Radio.value, EnvParam.RateFormat.value, "Rate Format:", fixed_width,
+     [_r.value for _r in RateFormat], None, None),
+    (FieldType.Radio.value, EnvParam.PricingEngine.value, "Pricing Engine:", fixed_width,
+     [_e.value for _e in EngineMethod], None, None),
     (FieldType.Number.value, EngineParam.MCIteration.value, "Monte-Carlo Iterations:", fixed_width,
-     EngineMethod.MC.value),
+     None, EnvParam.PricingEngine.value, EngineMethod.MC.value),
 ]
 
 
@@ -55,12 +62,7 @@ class PricingEnv(QDialog):
     def setup_ui(self):
         """setup all parameter input widget and buttons"""
         for _param in env_param:
-            if _param[1] == EnvParam.PricingEngine.value:
-                self._add_param(_param, self._parent.env_data[EnvParam.PricingEngine.value]['engine'],
-                                dict(range=[_engine.value for _engine in EngineMethod], param=engine_param,
-                                     default=self._parent.env_data[EnvParam.PricingEngine.value]['param']))
-            else:
-                self._add_param(_param, self._parent.env_data[_param[1]])
+            self._add_param(_param)
         _btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Reset)
         _btn.button(QDialogButtonBox.Ok).setDefault(True)
         _btn.button(QDialogButtonBox.Reset).clicked.connect(self._on_reset)
@@ -68,7 +70,7 @@ class PricingEnv(QDialog):
         _btn.rejected.connect(self.reject)
         self._main_layout.addWidget(_btn)
 
-    def _add_param(self, param_, default_=None, supplement_=None):
+    def _add_param(self, param_):
         if param_[0] in [FieldType.String.value, FieldType.Number.value]:
             _hbox = QHBoxLayout()
             _label = QLabel(param_[2])
@@ -76,24 +78,30 @@ class PricingEnv(QDialog):
             _hbox.addWidget(_label)
             _wgt = QLineEdit(self)
             _wgt.setAlignment(Qt.AlignRight)
-            if default_ is not None:
-                _wgt.setText(str(default_))
+            _default = self._parent.env_data.get(param_[1])
+            if _default is not None:
+                _wgt.setText(str(_default))
             self.__setattr__(param_[1], _wgt)
             _hbox.addWidget(_wgt)
             self._main_layout.addLayout(_hbox)
 
-            if param_[4] is not None:
+            if param_[5] is not None:
                 try:
-                    _parent = self.__getattribute__(param_[4])
-                    if not hasattr(_parent, 'param'):
-                        _parent.__setattr__('param', [])
+                    _grand_parent = self.__getattribute__(param_[5])
+                    for _btn in _grand_parent.buttons():
+                        _btn.changed.connect(self._radio_connection)
+                        if not hasattr(_btn, 'param'):
+                            _btn.__setattr__('param', [])
+
+                    _parent = self.__getattribute__(param_[6])
                     _parent.param.append(param_[1])
                     _parent.__setattr__(param_[1], _wgt)
                     _wgt.setEnabled(_parent.isChecked())
-                except AttributeError:
-                    pass
 
-        elif param_[0] == FieldType.Radio.value and isinstance(supplement_, dict):
+                except AttributeError as e:
+                    raise Exception(str(e))
+
+        elif param_[0] == FieldType.Radio.value:
             _vbox = QVBoxLayout()
             _label = QLabel(param_[2])
             _label.setFixedWidth(param_[3])
@@ -101,9 +109,7 @@ class PricingEnv(QDialog):
             _hbox = QHBoxLayout()
             _btn_group = QButtonGroup()
             self.__setattr__(param_[1], _btn_group)
-            _range = supplement_.get('range', [])
-            _param = supplement_.get('param', [])
-            _default = supplement_.get('default', [])
+            _range = param_[4]
             for _idx, _item in enumerate(_range):
                 _wgt = CustomRadioButton(_item, _item, self)
                 self.__setattr__(_item, _wgt)
@@ -111,14 +117,8 @@ class PricingEnv(QDialog):
                 _btn_group.addButton(_wgt, _idx)
             _vbox.addLayout(_hbox)
             self._main_layout.addLayout(_vbox)
-            self.__getattribute__(default_).setChecked(True)
-            if _param:
-                for _p in _param:
-                    self._add_param(_p, _default.get(_p[1]) if default_ else None)
-                for _item in _range:
-                    _wgt = self.__getattribute__(_item)
-                    if hasattr(_wgt, 'param'):
-                        _wgt.changed.connect(self._radio_connection)
+            _default = self._parent.env_data.get(param_[1])
+            self.__getattribute__(_default).setChecked(True)
 
     def _radio_connection(self, wgt_name_):
         _wgt = self.__getattribute__(wgt_name_)
@@ -129,27 +129,14 @@ class PricingEnv(QDialog):
     def _on_ok(self):
         _env = dict()
         for _param in env_param:
-            if _param[1] == EnvParam.PricingEngine.value:
-                _engine = dict()
-                _engine['engine'] = [_e.value for _e in EngineMethod][self.__getattribute__(_param[1]).checkedId()]
-                _engine['param'] = dict()
-                for _p in engine_param:
-                    _engine['param'][_p[1]] = self._get_wgt_value(_p[1], _p[0])
-                _env[_param[1]] = _engine
-            else:
-                _env[_param[1]] = self._get_wgt_value(_param[1], _param[0])
+            _env[_param[1]] = self._get_wgt_value(_param[1], _param[0], _param[4])
+
         self._parent.env_data = _env
         self.accept()
 
     def _on_reset(self):
         for _param in env_param:
-            if _param[1] == EnvParam.PricingEngine.value:
-                self._set_wgt_value(_param[1], _param[0], env_default_param[_param[1]]['engine'])
-                for _engine_param in engine_param:
-                    self._set_wgt_value(
-                        _engine_param[1], _engine_param[0], env_default_param[_param[1]]['param'][_engine_param[1]])
-            else:
-                self._set_wgt_value(_param[1], _param[0], env_default_param[_param[1]])
+            self._set_wgt_value(_param[1], _param[0], env_default_param[_param[1]])
 
     def _set_wgt_value(self, wgt_name_, wgt_type_, value_):
         _wgt = self.__getattribute__(wgt_name_)
@@ -162,13 +149,24 @@ class PricingEnv(QDialog):
         else:
             raise ValueError("invalid widget type {}".format(wgt_type_))
 
-    def _get_wgt_value(self, wgt_name_, wgt_type_):
+    def _get_wgt_value(self, wgt_name_, wgt_type_, *args):
         _wgt = self.__getattribute__(wgt_name_)
         if wgt_type_ == FieldType.String.value:
             return _wgt.text()
         elif wgt_type_ == FieldType.Number.value:
             return float_int(_wgt.text())
         elif wgt_type_ == FieldType.Radio.value:
-            return _wgt.checkedId()
+            _range = args[0]
+            return _range[_wgt.checkedId()]
         else:
             return None
+
+
+def parse_env(env_param_):
+    """parse environment data into market, engine, and rounding"""
+    _mkt = deepcopy(env_param_)
+    _engine = dict(engine=_mkt.pop(EnvParam.PricingEngine.value), param={})
+    for _engine_param in [_param for _param in env_param if _param[5] == EnvParam.PricingEngine.value]:
+        _engine['param'][_engine_param[1]] = _mkt.pop(_engine_param[1])
+    _rounding = _mkt.pop(EnvParam.CostRounding.value)
+    return _mkt, _engine, _rounding

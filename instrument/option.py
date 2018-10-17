@@ -4,7 +4,7 @@
 import numpy as np
 import scipy.stats as sps
 from instrument import InstParam, InstType, Instrument, option_type
-from instrument.env_param import EngineMethod, EngineParam, EnvParam
+from instrument.env_param import EngineMethod, EngineParam, EnvParam, RateFormat
 from utils import to_continuous_rate
 
 
@@ -101,16 +101,22 @@ class Option(Instrument):
 
     @staticmethod
     def _load_market(mkt_dict_):
-        _rate = mkt_dict_.get(EnvParam.RiskFreeRate.value)
+        _rate = mkt_dict_.get(EnvParam.RiskFreeRate.value) / 100
         if not isinstance(_rate, (int, float)):
             raise ValueError("type <int> or <float> is required for market risk free rate, not {}".format(type(_rate)))
-        _vol = mkt_dict_.get(EnvParam.UdVolatility.value)
+        _vol = mkt_dict_.get(EnvParam.UdVolatility.value) / 100
         if not isinstance(_vol, (int, float)):
             raise ValueError("type <int> or <float> is required for underlying volatility, not {}".format(type(_vol)))
-        _div = mkt_dict_.get(EnvParam.UdDivYieldRatio.value)
+        _div = mkt_dict_.get(EnvParam.UdDivYieldRatio.value) / 100
         if not isinstance(_div, (int, float)):
             raise ValueError("type <int> or <float> is required for dividend yield ratio, not {}".format(type(_div)))
-        return to_continuous_rate(_rate / 100), _vol / 100, to_continuous_rate(_div / 100)
+        _rate_format = mkt_dict_.get(EnvParam.RateFormat.value)
+        if _rate_format not in [_r.value for _r in RateFormat]:
+            raise ValueError("invalid rate type given: {}".format(_rate_format))
+        if _rate_format == RateFormat.Single.value:
+            _rate = to_continuous_rate(_rate)
+            _div = to_continuous_rate(_div)
+        return _rate, _vol, _div
 
     @staticmethod
     def _load_engine(engine_):

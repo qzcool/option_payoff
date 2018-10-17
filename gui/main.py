@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.9
+Version 1.2.10
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
@@ -16,10 +16,10 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow,
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
 from gui.table import InstTable
 from gui.plot import PayoffCurve, PlotParam
-from gui.pricing_env import PricingEnv
+from gui.pricing_env import PricingEnv, parse_env
 from instrument import Instrument
 from instrument.default_param import env_default_param
-from instrument.env_param import EngineMethod, parse_env
+from instrument.env_param import EngineMethod
 from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
 

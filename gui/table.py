@@ -6,9 +6,10 @@ from PyQt5.QtWidgets import QAbstractItemView, QMessageBox, QTableWidgetItem
 from enum import Enum
 from gui.custom import CustomCheckBox, CustomComboBox, CustomTableWidget
 from gui.plot import PlotParam
+from gui.pricing_env import parse_env
 from instrument import InstType, InstParam, Instrument, option_type
 from instrument.default_param import default_param, default_type
-from instrument.env_param import EnvParam, parse_env
+from instrument.env_param import EnvParam
 from utils import float_int
 
 
@@ -180,12 +181,13 @@ class InstTable(CustomTableWidget):
                         else:
                             _default = default_param[_type].get(_col[3], '-')
                         self.item(_row, _idx).setText(str(_default))
+                        self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
                     elif _col[1] == ColType.Boolean.value:
                         _default = default_param[_type].get(_col[3], False)
                         self.item(_row, _idx).setCheckState(Qt.Checked if _default else Qt.Unchecked)
+                        self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable)
                     elif _col[1] == ColType.Other.value:
                         pass
-                    self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
 
                 if _type == InstType.Stock.value:
                     for _idx, _col in enumerate(table_col):

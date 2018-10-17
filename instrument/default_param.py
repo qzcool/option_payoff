@@ -3,7 +3,7 @@
 
 from gui.plot import PlotParam
 from instrument import InstParam, InstType
-from instrument.env_param import EnvParam, EngineMethod, EngineParam
+from instrument.env_param import EnvParam, EngineMethod, EngineParam, RateFormat
 
 
 default_param = {
@@ -34,10 +34,7 @@ env_default_param = {
     EnvParam.UdInitialPrice.value: 100,
     EnvParam.PortMaturity.value: 1,
     EnvParam.CostRounding.value: 2,
-    EnvParam.PricingEngine.value: {
-        'engine': EngineMethod.BS.value,
-        'param': {
-            EngineParam.MCIteration.value: 1000000
-        }
-    }
+    EnvParam.RateFormat.value: RateFormat.Single.value,
+    EnvParam.PricingEngine.value: EngineMethod.BS.value,
+    EngineParam.MCIteration.value: 1000000,
 }
