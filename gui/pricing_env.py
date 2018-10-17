@@ -64,7 +64,7 @@ class PricingEnv(QDialog):
         for _param in env_param:
             self._add_param(_param)
         _btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Reset)
-        _btn.button(QDialogButtonBox.Ok).setDefault(True)
+        _btn.button(QDialogButtonBox.Ok).autoDefault()
         _btn.button(QDialogButtonBox.Reset).clicked.connect(self._on_reset)
         _btn.accepted.connect(self._on_ok)
         _btn.rejected.connect(self.reject)
