@@ -68,9 +68,13 @@ class Instrument(object):
         """get instrument profit for given spot"""
         return self.payoff(spot_) - self.unit * self.price
 
-    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
-        """evaluate instrument price on given market"""
-        raise NotImplementedError("'evaluate' method need to be defined in sub-classes")
+    def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """evaluate instrument PV on given market"""
+        raise NotImplementedError("'pv' method need to be defined in sub-classes")
+
+    def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """evaluate instrument DELTA with market data and engine"""
+        raise NotImplementedError("'delta' method need to be defined in sub-classes")
 
     @property
     def isp(self):

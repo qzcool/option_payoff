@@ -32,8 +32,8 @@ class Option(Instrument):
         _reference = spot_ - self.strike if self.type == InstType.CallOption.value else self.strike - spot_
         return max([_reference, 0]) * self.unit
 
-    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
-        """do option pricing with market data and engine"""
+    def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """calculate option PV with market data and engine"""
         _rate, _vol, _div = self._load_market(mkt_dict_)
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
@@ -56,6 +56,31 @@ class Option(Instrument):
             _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
             _price = [max(_sign * (_s - self.strike), 0) for _s in _spot]
             return np.average(_price) * np.ma.exp(-_rate * self.maturity)
+
+    def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """calculate option DELTA with market data and engine"""
+        _rate, _vol, _div = self._load_market(mkt_dict_)
+        _method, _param = self._load_engine(engine_)
+        _sign = 1 if self.type == InstType.CallOption.value else -1
+        _isp = overwrite_isp_ if overwrite_isp_ else self.isp
+
+        if _method == EngineMethod.BS.value:
+            _d1 = (np.ma.log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
+                  / _vol / np.ma.sqrt(self.maturity)
+            return _sign * sps.norm.cdf(_sign * _d1)
+
+        elif _method == EngineMethod.MC.value:
+            from utils.monte_carlo import MonteCarlo
+            _iteration = _param.get(EngineParam.MCIteration.value)
+            if not _iteration:
+                raise ValueError("iteration not specified")
+            if not isinstance(_iteration, int):
+                raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
+            _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
+            _step = 0.01
+            _delta = [(max(_sign * (_s + _step - self.strike), 0) - max(_sign * (_s - _step - self.strike), 0)) /
+                      (_step * 2) for _s in _spot]
+            return np.average(_delta) * np.ma.exp(-_rate * self.maturity)
 
     @property
     def type(self):
@@ -162,10 +187,10 @@ if __name__ == '__main__':
 
     _timer = Timer("option pricing: {} {}, {} years, rate {}%, vol {}%".format(
         strike, "call" if callput == InstType.CallOption.value else "put", maturity, rate, vol), logger, rounding_=6)
-    price_bs = round(option_1.evaluate(mkt, engine_1), 6)
+    price_bs = round(option_1.pv(mkt, engine_1), 6)
     logger.info("price = {} (Black-Scholes)".format(price_bs))
     _timer.mark("pricing using Black-Scholes")
-    price_mc = round(option_1.evaluate(mkt, engine_2), 6)
+    price_mc = round(option_1.pv(mkt, engine_2), 6)
     logger.info("price = {} (Monte-Carlo, {} iteration)".format(price_mc, iteration))
     _timer.mark("pricing using Monte-Carlo with {} iteration".format(iteration))
     _timer.close()

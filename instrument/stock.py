@@ -16,6 +16,10 @@ class Stock(Instrument):
         """get stock payoff for given spot"""
         return spot_ * self.unit
 
-    def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
-        """no evaluation needed for stock"""
+    def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """no pv calc needed for stock"""
         return overwrite_isp_ if overwrite_isp_ else self.isp
+
+    def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """no delta calc needed for stock"""
+        return 1

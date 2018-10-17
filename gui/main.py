@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.10
+Version 1.2.11
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
@@ -34,7 +34,8 @@ Instrument Parameters:
 Plotting Choices:
 1. Payoff Curve
 2. Profit Curve
-3. Evaluation Curve
+3. PV Curve
+4. Delta Curve
 
 Pricing Tips:
 1. Right click an OPTION for auto pricing
@@ -216,8 +217,12 @@ class ApplicationWindow(QMainWindow):
         _plot_btn.clicked.connect(self._plot_profit)
         _hbox.addWidget(_plot_btn)
 
-        _plot_btn = QPushButton("Evaluation Curve")
-        _plot_btn.clicked.connect(self._plot_price)
+        _plot_btn = QPushButton("PV Curve")
+        _plot_btn.clicked.connect(self._plot_pv)
+        _hbox.addWidget(_plot_btn)
+
+        _plot_btn = QPushButton("Delta Curve")
+        _plot_btn.clicked.connect(self._plot_delta)
         _hbox.addWidget(_plot_btn)
 
         return _hbox
@@ -261,12 +266,15 @@ class ApplicationWindow(QMainWindow):
     def _plot_profit(self):
         self._plot_impl(CurveType.Profit.value)
 
-    def _plot_price(self):
-        self._plot_impl(CurveType.Evaluation.value)
+    def _plot_pv(self):
+        self._plot_impl(CurveType.PV.value)
+
+    def _plot_delta(self):
+        self._plot_impl(CurveType.Delta.value)
 
     def _plot_impl(self, type_):
         _portfolio = self._prepare_data()
-        if type_ == CurveType.Evaluation.value and _portfolio.engine['engine'] == EngineMethod.MC.value:
+        if type_ == CurveType.PV.value and _portfolio.engine['engine'] == EngineMethod.MC.value:
             if QMessageBox.question(
                     self, "Evaluation Cure",
                     "Using Monte-Carlo to generate Evaluation Curve might be extremely time consuming. "

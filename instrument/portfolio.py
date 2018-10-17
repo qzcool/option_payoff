@@ -10,7 +10,8 @@ class CurveType(Enum):
     """supported curve type for portfolio curve generator"""
     Payoff = 'Payoff'
     Profit = 'Profit'
-    Evaluation = 'Evaluation'
+    PV = 'PV'
+    Delta = 'Delta'
 
 
 class Portfolio(object):
@@ -33,8 +34,10 @@ class Portfolio(object):
             _curve_func = self._payoff
         elif type_ == CurveType.Profit.value:
             _curve_func = self._profit
-        elif type_ == CurveType.Evaluation.value:
-            _curve_func = self._price
+        elif type_ == CurveType.PV.value:
+            _curve_func = self._pv
+        elif type_ == CurveType.Delta.value:
+            _curve_func = self._delta
         else:
             raise ValueError("invalid curve type {}".format(type_))
 
@@ -46,8 +49,11 @@ class Portfolio(object):
                 _y.extend([np.array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
             elif type_ == CurveType.Profit.value:
                 _y.extend([np.array([_inst.profit(_spot) for _spot in _x]) for _inst in self._components_show])
-            elif type_ == CurveType.Evaluation.value:
-                _y.extend([np.array([_inst.evaluate(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+            elif type_ == CurveType.PV.value:
+                _y.extend([np.array([_inst.pv(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+                           for _inst in self._components_show])
+            elif type_ == CurveType.Delta.value:
+                _y.extend([np.array([_inst.delta(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
                            for _inst in self._components_show])
         return _x, _y
 
@@ -103,8 +109,11 @@ class Portfolio(object):
     def _profit(self, spot_):
         return sum([_comp.profit(spot_) for _comp in self._components])
 
-    def _price(self, spot_):
-        return sum([_comp.evaluate(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])
+    def _pv(self, spot_):
+        return sum([_comp.pv(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])
+
+    def _delta(self, spot_):
+        return sum([_comp.delta(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])
 
     def _x_range(self, margin_, step_):
         _strike_list = [_comp.strike for _comp in self._components if _comp.type in option_type]
