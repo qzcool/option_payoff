@@ -42,17 +42,17 @@ Pricing Tips:
 2. Edit pricing env in Menu - Config - Pricing Env
 
 Pricing Parameters:
-1. Risk Free Rate (discrete, %, default 3)
-    * will be shifted to continuous term
-    * r_c = (ln(1 + r / 100) - 1) * 100
-2. Portfolio Maturity (y)
-    * marked as number of YEARS
-3. Underlying Volatility (%, default 30)
-4. Dividend Yield Ratio (discrete, %, default 0)
-    * will be shifted to continuous term
-    * div_c = (ln(1 + div / 100) - 1) * 100
+1. Annual Risk Free Rate (%, default 3)
+2. Underlying Volatility (%, default 30)
+3. Dividend Yield Ratio (%, default 0)
+4. Portfolio Maturity (y)
 5. Cost Rounding (default 2)
-6. Pricing Engine (default Black-Scholes)
+6. Rate Format (default Single)
+    * Single or Compound (continuous)
+    * if Single is chosen, 1 & 3 will shifted via:
+    * r_c = (ln(1 + r / 100) - 1) * 100
+7. Pricing Engine (default Black-Scholes)
+    * Black-Scholes or Monte-Carlo
 '''
 
 
