@@ -168,6 +168,7 @@ class InstTable(CustomTableWidget):
                 if _col[0] == TableCol.Type.value and self.item(_row, _idx).text() == wgt_name_:
                     _type = self.__getattribute__(self.item(_row, _idx).text()).currentText()
                     break
+
             if _type:
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
@@ -178,6 +179,12 @@ class InstTable(CustomTableWidget):
                         self.item(_row, _idx).setCheckState(Qt.Checked if _default else Qt.Unchecked)
                     elif _col[1] == ColType.Other.value:
                         pass
+                    self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
+
+                if _type == InstType.Stock.value:
+                    for _idx, _col in enumerate(table_col):
+                        if _col[3] in [InstParam.OptionStrike.value, InstParam.InstCost.value]:
+                            self.item(_row, _idx).setFlags(Qt.ItemIsSelectable)
                 return
         raise ValueError("missing default value of {}".format(wgt_name_))
 
