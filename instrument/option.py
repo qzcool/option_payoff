@@ -1,8 +1,9 @@
 # coding=utf-8
 """definition of option for payoff estimation and pricing"""
 
-import numpy as np
-import scipy.stats as sps
+from numpy import average
+from numpy.ma import exp, log, sqrt
+from scipy.stats import norm
 from instrument import InstParam, InstType, Instrument, option_type
 from instrument.env_param import EngineMethod, EngineParam, EnvParam, RateFormat
 from utils import to_continuous_rate
@@ -40,11 +41,10 @@ class Option(Instrument):
         _isp = overwrite_isp_ if overwrite_isp_ else self.isp
 
         if _method == EngineMethod.BS.value:
-            _d1 = (np.ma.log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
-                  / _vol / np.ma.sqrt(self.maturity)
-            _d2 = _d1 - _vol * np.ma.sqrt(self.maturity)
-            return _sign * (_isp * np.ma.exp(-_div * self.maturity) * sps.norm.cdf(_sign * _d1) -
-                            self.strike * np.ma.exp(-_rate * self.maturity) * sps.norm.cdf(_sign * _d2))
+            _d1 = (log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) / _vol / sqrt(self.maturity)
+            _d2 = _d1 - _vol * sqrt(self.maturity)
+            return _sign * (_isp * exp(-_div * self.maturity) * norm.cdf(_sign * _d1) -
+                            self.strike * exp(-_rate * self.maturity) * norm.cdf(_sign * _d2))
 
         elif _method == EngineMethod.MC.value:
             from utils.monte_carlo import MonteCarlo
@@ -55,7 +55,7 @@ class Option(Instrument):
                 raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
             _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
             _price = [max(_sign * (_s - self.strike), 0) for _s in _spot]
-            return np.average(_price) * np.ma.exp(-_rate * self.maturity)
+            return average(_price) * exp(-_rate * self.maturity)
 
     def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
         """calculate option DELTA with market data and engine"""
@@ -65,9 +65,8 @@ class Option(Instrument):
         _isp = overwrite_isp_ if overwrite_isp_ else self.isp
 
         if _method == EngineMethod.BS.value:
-            _d1 = (np.ma.log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \
-                  / _vol / np.ma.sqrt(self.maturity)
-            return _sign * sps.norm.cdf(_sign * _d1)
+            _d1 = (log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) / _vol / sqrt(self.maturity)
+            return _sign * norm.cdf(_sign * _d1)
 
         elif _method == EngineMethod.MC.value:
             from utils.monte_carlo import MonteCarlo
@@ -80,7 +79,7 @@ class Option(Instrument):
             _step = 0.01
             _delta = [(max(_sign * (_s + _step - self.strike), 0) - max(_sign * (_s - _step - self.strike), 0)) /
                       (_step * 2) for _s in _spot]
-            return np.average(_delta) * np.ma.exp(-_rate * self.maturity)
+            return average(_delta) * exp(-_rate * self.maturity)
 
     @property
     def type(self):

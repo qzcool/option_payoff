@@ -1,7 +1,7 @@
 # coding=utf-8
 """common utility functions"""
 
-import numpy as np
+from numpy.ma import log
 
 PRECISION_ZERO = 10 ** -3
 
@@ -17,7 +17,7 @@ def float_int(string_):
 
 def to_continuous_rate(rate_):
     """shift discrete rate to continuous rate"""
-    return np.ma.log(1 + rate_)
+    return log(1 + rate_)
 
 
 def parse_kwargs(kwargs_, parse_list_, alternative_=None):

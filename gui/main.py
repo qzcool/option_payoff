@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.13
+Version 1.2.14
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
@@ -9,8 +9,8 @@ A simple tool to estimate the payoff / profit / pv / delta curve of vanilla port
 Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
 
-import sys
-import numpy as np
+from sys import argv as sys_argv, exit as sys_exit
+from numpy import array
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
@@ -54,7 +54,7 @@ class ApplicationWindow(QMainWindow):
     def setup_ui(self):
         """setup menu, option editor, and payoff curve viewer"""
         self._set_menu()
-        self._plot = PayoffCurve(dict(x=np.array([]), y=np.array([]), type="Payoff"), self._main)
+        self._plot = PayoffCurve(dict(x=array([]), y=array([]), type="Payoff"), self._main)
         self._set_table()
 
         _main_layout = QHBoxLayout(self._main)
@@ -264,6 +264,6 @@ class ApplicationWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QApplication(sys_argv)
     main = ApplicationWindow()
-    sys.exit(app.exec_())
+    sys_exit(app.exec_())

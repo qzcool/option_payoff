@@ -1,7 +1,7 @@
 # coding=utf-8
 """definition of portfolio for payoff estimation"""
 
-import numpy as np
+from numpy import arange, array, vectorize
 from enum import Enum
 from instrument import InstType, option_type
 
@@ -42,18 +42,18 @@ class Portfolio(object):
             raise ValueError("invalid curve type {}".format(type_))
 
         _x = self._x_range(margin_, step_)
-        _y = [np.vectorize(_curve_func)(_x)]
+        _y = [vectorize(_curve_func)(_x)]
 
         if full_:
             if type_ == CurveType.Payoff.value:
-                _y.extend([np.array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
+                _y.extend([array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
             elif type_ == CurveType.Profit.value:
-                _y.extend([np.array([_inst.profit(_spot) for _spot in _x]) for _inst in self._components_show])
+                _y.extend([array([_inst.profit(_spot) for _spot in _x]) for _inst in self._components_show])
             elif type_ == CurveType.PV.value:
-                _y.extend([np.array([_inst.pv(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+                _y.extend([array([_inst.pv(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
                            for _inst in self._components_show])
             elif type_ == CurveType.Delta.value:
-                _y.extend([np.array([_inst.delta(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+                _y.extend([array([_inst.delta(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
                            for _inst in self._components_show])
         return _x, _y
 
@@ -120,7 +120,7 @@ class Portfolio(object):
         _min = min(_strike_list) if _strike_list else self._isp
         _max = max(_strike_list) if _strike_list else self._isp
         _dist = max([self._isp - _min, _max - self._isp])
-        _x = np.arange(max(self._isp - _dist - margin_, 0), self._isp + _dist + margin_ + step_, step_)
+        _x = arange(max(self._isp - _dist - margin_, 0), self._isp + _dist + margin_ + step_, step_)
         return _x
 
     def _check_isp(self):

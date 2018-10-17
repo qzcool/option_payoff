@@ -71,6 +71,8 @@ class InstTable(CustomTableWidget):
         for _idx, _col in enumerate(table_col):
             if _col[1] in [ColType.String.value, ColType.Number.value]:
                 _default = default_param[_type].get(_col[3], '-')
+                if _col[3] == InstParam.OptionStrike.value:
+                    _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value, _default)
                 _content = data_.get(_col[3], _default) if data_ else _default
                 _wgt = QTableWidgetItem(str(_content))
                 _wgt.setTextAlignment(Qt.AlignCenter)
@@ -175,7 +177,8 @@ class InstTable(CustomTableWidget):
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
                         if _col[3] == InstParam.OptionStrike.value:
-                            _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value, 100)
+                            _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value,
+                                                                 default_param[_type].get(_col[3], '-'))
                         else:
                             _default = default_param[_type].get(_col[3], '-')
                         self.item(_row, _idx).setText(str(_default))
@@ -190,6 +193,7 @@ class InstTable(CustomTableWidget):
                 if _type == InstType.Stock.value:
                     for _idx, _col in enumerate(table_col):
                         if _col[3] in [InstParam.OptionStrike.value, InstParam.InstCost.value]:
+                            self.item(_row, _idx).setText('-')
                             self.item(_row, _idx).setFlags(Qt.ItemIsSelectable)
                 return
         raise ValueError("missing default value of {}".format(wgt_name_))

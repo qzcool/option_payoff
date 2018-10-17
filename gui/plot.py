@@ -1,7 +1,7 @@
 # coding=utf-8
 """plotting template"""
 
-import numpy as np
+from numpy import array, zeros
 from enum import Enum
 from gui.custom import CustomMplCanvas
 from utils import PRECISION_ZERO
@@ -25,8 +25,8 @@ class PayoffCurve(CustomMplCanvas):
         plot payoff curve using given data
         :param data_: a dict consists with x (numpy array) and y (numpy array) in same dimension
         """
-        _x = data_.get('x', np.array([]))
-        _y = np.array(data_.get('y', [np.array([])]))
+        _x = data_.get('x', array([]))
+        _y = array(data_.get('y', [array([])]))
         _type = data_.get('type')
         _x_ref = data_.get('x_ref', 0)
         _y_ref = data_.get('y_ref', 100)
@@ -40,7 +40,7 @@ class PayoffCurve(CustomMplCanvas):
 
             if _y.min() <= _x_ref <= _y.max() \
                     or abs(_y.min() - _x_ref) <= PRECISION_ZERO or abs(_y.max() - _x_ref) <= PRECISION_ZERO:
-                self._axes.plot(_x, np.zeros(_x.size) + _x_ref, color="grey", linewidth=1.5)
+                self._axes.plot(_x, zeros(_x.size) + _x_ref, color="grey", linewidth=1.5)
 
             if len(_y) > 1:
                 for _line in _y[1:]:
