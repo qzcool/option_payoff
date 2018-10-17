@@ -16,7 +16,6 @@ class Option(Instrument):
     can evaluate option price under different market using different evaluation engine
     """
     _name = "option"
-    _isp = 100
     _strike = None
     _maturity = None
 
@@ -38,7 +37,7 @@ class Option(Instrument):
         _rate, _vol, _div = self._load_market(mkt_dict_)
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
-        _isp = overwrite_isp_ if overwrite_isp_ else self._isp
+        _isp = overwrite_isp_ if overwrite_isp_ else self.isp
 
         if _method == EngineMethod.BS.value:
             _d1 = (np.ma.log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) \

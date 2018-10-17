@@ -10,7 +10,7 @@ class Stock(Instrument):
 
     def __init__(self, inst_dict_):
         super(Stock, self).__init__(inst_dict_)
-        self.price = 100
+        self.price = self.isp
 
     def payoff(self, spot_):
         """get stock payoff for given spot"""
@@ -18,4 +18,4 @@ class Stock(Instrument):
 
     def evaluate(self, mkt_dict_, engine_, overwrite_isp_=None):
         """no evaluation needed for stock"""
-        return overwrite_isp_ if overwrite_isp_ else self.price
+        return overwrite_isp_ if overwrite_isp_ else self.isp

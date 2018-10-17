@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.8
+Version 1.2.9
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / evaluation curve of vanilla portfolios.
@@ -25,13 +25,11 @@ from json import dumps, loads
 
 __help__ = '''
 Instrument Parameters:
-1. Strike - strike level of an OPTION
-    * marked as % of underlying ISP
+1. Strike - strike price of an OPTION
 2. Unit - unit of each instrument
     * could be a FLOAT number
     * could be NEGATIVE indicating SHORT position
-3. Cost - unit cost level of an OPTION
-    * marked as % of underlying ISP
+3. Cost - unit cost of an OPTION
 
 Plotting Choices:
 1. Payoff Curve
@@ -276,7 +274,7 @@ class ApplicationWindow(QMainWindow):
                 return
         _x, _y = _portfolio.gen_curve(type_, full_=True)
         _x_ref = 0 if type_ == CurveType.Profit.value else 100 if _portfolio.has_stock() else 0
-        self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref))
+        self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref, y_ref=_portfolio.isp()))
 
     def _test(self):
         pass

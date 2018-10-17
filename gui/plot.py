@@ -29,13 +29,14 @@ class PayoffCurve(CustomMplCanvas):
         _y = np.array(data_.get('y', [np.array([])]))
         _type = data_.get('type')
         _x_ref = data_.get('x_ref', 0)
+        _y_ref = data_.get('y_ref', 100)
 
         if not _type:
             raise ValueError("plot type is required")
 
         if _x.size and _y.size:
             self._axes.clear()
-            self._axes.plot((100, 100), (_y.min(), _y.max()), color="grey", linewidth=1.5)
+            self._axes.plot((_y_ref, _y_ref), (_y.min(), _y.max()), color="grey", linewidth=1.5)
 
             if _y.min() <= _x_ref <= _y.max() \
                     or abs(_y.min() - _x_ref) <= PRECISION_ZERO or abs(_y.max() - _x_ref) <= PRECISION_ZERO:
@@ -65,7 +66,7 @@ class PayoffCurve(CustomMplCanvas):
         self.print_png(file_path_)
 
     def _set_axis(self, type_):
-        self._axes.set_xlabel("Spot (% of ISP)")
+        self._axes.set_xlabel("Spot")
         self._axes.set_ylabel(type_)
         self._axes.set_title("Option Portfolio {} Curve".format(type_))
         self._axes.grid(axis='x', linewidth=0.75, linestyle='-', color='0.75')

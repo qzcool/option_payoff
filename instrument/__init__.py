@@ -6,6 +6,7 @@ from enum import Enum
 
 class InstParam(Enum):
     """instrument parameters"""
+    InstISP = 'InstISP'
     InstType = 'InstType'
     InstUnit = 'InstUnit'
     InstCost = 'InstCost'
@@ -31,12 +32,14 @@ class Instrument(object):
     """
     _name = "instrument"
     _inst_dict = None
+    _isp = None
     _type = None
     _unit = None
     _price = None
 
     def __init__(self, inst_dict_):
         self._inst_dict = inst_dict_
+        self.isp = inst_dict_.get(InstParam.InstISP.value)
         self.type = inst_dict_.get(InstParam.InstType.value)
         self.unit = inst_dict_.get(InstParam.InstUnit.value)
         self.price = inst_dict_.get(InstParam.InstCost.value)
@@ -70,6 +73,20 @@ class Instrument(object):
         raise NotImplementedError("'evaluate' method need to be defined in sub-classes")
 
     @property
+    def isp(self):
+        """instrument ISP"""
+        if self._isp is None:
+            raise ValueError("{} ISP not specified".format(self._name))
+        return self._isp
+
+    @isp.setter
+    def isp(self, isp_):
+        if isp_ is not None:
+            if not isinstance(isp_, (int, float)):
+                raise ValueError("type <int> or <float> is required for ISP, not {}".format(type(isp_)))
+            self._isp = isp_
+
+    @property
     def type(self):
         """instrument type"""
         if self._type is None:
@@ -98,7 +115,7 @@ class Instrument(object):
 
     @property
     def price(self):
-        """instrument price - percentage of ISP"""
+        """instrument price"""
         if self._price is None:
             raise ValueError("{} price not specified".format(self._name))
         return self._price

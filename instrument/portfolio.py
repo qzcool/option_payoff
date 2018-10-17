@@ -23,6 +23,8 @@ class Portfolio(object):
         self._components_show = []
         self._mkt_data = None
         self._engine = None
+        self._isp = self._check_isp()
+        self._maturity = self._check_maturity()
         self._has_stock = self._check_stock()
 
     def gen_curve(self, type_, margin_=20, step_=1, full_=False):
@@ -61,6 +63,14 @@ class Portfolio(object):
         """..."""
         self.engine = engine_
 
+    def isp(self):
+        """..."""
+        return self._isp
+
+    def maturity(self):
+        """..."""
+        return self._maturity
+
     def has_stock(self):
         """..."""
         return self._has_stock
@@ -98,11 +108,17 @@ class Portfolio(object):
 
     def _x_range(self, margin_, step_):
         _strike_list = [_comp.strike for _comp in self._components if _comp.type in option_type]
-        _min = min(_strike_list) if _strike_list else 100
-        _max = max(_strike_list) if _strike_list else 100
-        _dist = max([100 - _min, _max - 100])
-        _x = np.arange(100 - _dist - margin_, 100 + _dist + margin_ + step_, step_)
+        _min = min(_strike_list) if _strike_list else self._isp
+        _max = max(_strike_list) if _strike_list else self._isp
+        _dist = max([self._isp - _min, _max - self._isp])
+        _x = np.arange(max(self._isp - _dist - margin_, 0), self._isp + _dist + margin_ + step_, step_)
         return _x
+
+    def _check_isp(self):
+        _isp = set([_comp.isp for _comp in self._components])
+        if len(_isp) > 1:
+            raise ValueError("isp of all components should be same")
+        return _isp.pop() if len(_isp) == 1 else 100
 
     def _check_maturity(self):
         _maturity = set([_comp.maturity for _comp in self._components if _comp.type in option_type])

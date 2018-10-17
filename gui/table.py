@@ -102,6 +102,8 @@ class InstTable(CustomTableWidget):
             else:
                 raise ValueError("invalid column type '{}'".format(_col[1]))
 
+        self._set_default('{}_type'.format(_id))
+
     def copy_row(self):
         """copy an existing instrument and create a new one"""
         self.add_row()
@@ -137,6 +139,7 @@ class InstTable(CustomTableWidget):
     def _collect_row_full(self, row_):
         _data_dict = self._collect_row(row_)
         _type = _data_dict.get(InstParam.InstType.value)
+        _data_dict[InstParam.InstISP.value] = self._parent.env_data[EnvParam.UdInitialPrice.value]
         if _type in option_type:
             _data_dict[InstParam.OptionMaturity.value] = self._parent.env_data[EnvParam.PortMaturity.value]
         return _data_dict
@@ -172,7 +175,10 @@ class InstTable(CustomTableWidget):
             if _type:
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
-                        _default = default_param[_type].get(_col[3], '-')
+                        if _col[3] == InstParam.OptionStrike.value:
+                            _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value, 100)
+                        else:
+                            _default = default_param[_type].get(_col[3], '-')
                         self.item(_row, _idx).setText(str(_default))
                     elif _col[1] == ColType.Boolean.value:
                         _default = default_param[_type].get(_col[3], False)
