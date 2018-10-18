@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.3.1
+Version 1.3.2
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the different spot-based curves of vanilla portfolios.
@@ -64,8 +64,6 @@ class ApplicationWindow(QMainWindow):
         self._last_path = '.'
         # setup and show
         self.setup_ui()
-        self.setCentralWidget(self._main)
-        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 500))
         self.show()
 
     def setup_ui(self):
@@ -85,9 +83,10 @@ class ApplicationWindow(QMainWindow):
         _vbox = QVBoxLayout()
         _vbox.setSpacing(0)
         _vbox.addWidget(self._plot)
+        # _vbox.addWidget(self._plot.tool_bar())
 
         _sub_vbox = QVBoxLayout()
-        _sub_vbox.setContentsMargins(0, 10, 0, 0)
+        _sub_vbox.setContentsMargins(0, 8, 0, 0)
         _sub_vbox.setSpacing(0)
         for _btn in btn_group:
             _sub_vbox.addLayout(self._plot_btn_layout(_btn))
@@ -95,6 +94,13 @@ class ApplicationWindow(QMainWindow):
 
         _main_layout.addLayout(_vbox)
         self._main.setFocus()
+        self.setCentralWidget(self._main)
+        _width, _height = self._get_width_height()
+        self.setGeometry(QRect(100, 100, _width, _height))
+
+    def _get_width_height(self):
+        _plot_width, _plot_height = self._plot.get_width_height()
+        return 56 + self._table.col_width() + _plot_width, 100 + _plot_height
 
     def _load(self):
         _file_path, _file_type = QFileDialog.getOpenFileName(

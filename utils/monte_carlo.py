@@ -13,5 +13,5 @@ class MonteCarlo(object):
     def stock_price(cls, iteration_=1, **kwargs):
         """generate stock spot through stochastic process"""
         _rand = rand_norm(0, 1, iteration_)
-        _isp, _rate, _div, _vol, _t = parse_kwargs(kwargs, ['isp', 'rate', 'div', 'vol', 'maturity'], 0)
+        _isp, _rate, _div, _vol, _t = parse_kwargs(kwargs, ['isp', 'rate', 'div', 'vol', 't'], 0)
         return _isp * exp((_rate - _div - _vol ** 2 / 2) * _t + _vol * sqrt(_t) * _rand)

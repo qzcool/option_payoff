@@ -4,9 +4,8 @@
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QPushButton, QRadioButton, QSizePolicy, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from matplotlib import use
-use("Qt5Agg")
 
 
 class CustomPushButton(QPushButton):
@@ -76,14 +75,20 @@ class CustomRadioButton(QRadioButton):
 class CustomMplCanvas(FigureCanvas):
     """DIY figure canvas"""
     def __init__(self, data_=None, parent_=None, width_=5, height_=4, dpi_=100):
+        self._parent = parent_
         self._fig = Figure(figsize=(width_, height_), dpi=dpi_)
         self._axes = self._fig.add_subplot(111)
         self._plot_figure(data_)
 
-        FigureCanvas.__init__(self, self._fig)
+        super(CustomMplCanvas, self).__init__(self._fig)
         self.setParent(parent_)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
+    #     self._tool_bar = NavigationToolbar(self, self._parent)
+
+    # def tool_bar(self):
+    #     """..."""
+    #     return self._tool_bar
 
     def _plot_figure(self, data_):
         """plot figure using given data"""

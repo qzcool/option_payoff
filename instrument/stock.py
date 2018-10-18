@@ -2,6 +2,8 @@
 """definition of stock for payoff estimation and pricing"""
 
 from instrument import Instrument
+# from instrument.env_param import EnvParam
+# from numpy.ma import exp
 
 
 class Stock(Instrument):
@@ -18,7 +20,9 @@ class Stock(Instrument):
 
     def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
         """no pv calc needed for stock"""
-        return overwrite_isp_ if overwrite_isp_ else self.isp
+        # _div, _t = tuple(self._load_market(mkt_dict_, [EnvParam.UdDivYieldRatio.value, EnvParam.PortMaturity.value]))
+        _base = overwrite_isp_ if overwrite_isp_ else self.isp
+        return _base  # * exp(-_div * _t)
 
     def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
         """no delta calc needed for stock"""

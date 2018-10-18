@@ -67,7 +67,7 @@ class PayoffCurve(CustomMplCanvas):
 
     def _set_axis(self, type_):
         self._axes.set_xlabel("Spot")
-        self._axes.set_ylabel(type_)
+        # self._axes.set_ylabel(type_)
         self._axes.set_title("Option Portfolio {} Curve".format(type_))
         self._axes.grid(axis='x', linewidth=0.75, linestyle='-', color='0.75')
         self._axes.grid(axis='y', linewidth=0.75, linestyle='-', color='0.75')
