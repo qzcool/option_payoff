@@ -9,7 +9,7 @@ from numpy import arange, array, vectorize
 class CurveType(Enum):
     """supported curve type for portfolio curve generator"""
     Payoff = 'Payoff'
-    NetPayoff = 'NetPayoff'
+    NetPayoff = 'Net Payoff'
     PnL = 'PnL'
     PV = 'PV'
     Delta = 'Delta'

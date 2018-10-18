@@ -3,7 +3,7 @@
 
 from instrument import InstParam, InstType, Instrument, option_type
 from instrument.env_param import EngineMethod, EngineParam, EnvParam
-from numpy import average
+from numpy import average, pi
 from numpy.ma import exp, log, sqrt
 from scipy.stats import norm
 
@@ -34,11 +34,7 @@ class Option(Instrument):
 
     def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
         """calculate option PV with market data and engine"""
-        _load_param = [EnvParam.RiskFreeRate.value, EnvParam.UdVolatility.value, EnvParam.UdDivYieldRatio.value]
-        _rate, _vol, _div = tuple(self._load_market(mkt_dict_, _load_param))
-        _method, _param = self._load_engine(engine_)
-        _sign = 1 if self.type == InstType.CallOption.value else -1
-        _isp = overwrite_isp_ if overwrite_isp_ else self.isp
+        _rate, _vol, _div, _method, _param, _sign, _isp = self._prepare_risk_data(mkt_dict_, engine_, overwrite_isp_)
 
         if _method == EngineMethod.BS.value:
             _d1 = (log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) / _vol / sqrt(self.maturity)
@@ -59,11 +55,7 @@ class Option(Instrument):
 
     def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
         """calculate option DELTA with market data and engine"""
-        _load_param = [EnvParam.RiskFreeRate.value, EnvParam.UdVolatility.value, EnvParam.UdDivYieldRatio.value]
-        _rate, _vol, _div = tuple(self._load_market(mkt_dict_, _load_param))
-        _method, _param = self._load_engine(engine_)
-        _sign = 1 if self.type == InstType.CallOption.value else -1
-        _isp = overwrite_isp_ if overwrite_isp_ else self.isp
+        _rate, _vol, _div, _method, _param, _sign, _isp = self._prepare_risk_data(mkt_dict_, engine_, overwrite_isp_)
 
         if _method == EngineMethod.BS.value:
             _d1 = (log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) / _vol / sqrt(self.maturity)
@@ -81,6 +73,29 @@ class Option(Instrument):
             _delta = [(max(_sign * (_s + _step - self.strike), 0) - max(_sign * (_s - _step - self.strike), 0)) /
                       (_step * 2) for _s in _spot]
             return average(_delta) * exp(-_rate * self.maturity)
+
+    def gamma(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """calculate option GAMMA with market data and engine"""
+        _rate, _vol, _div, _method, _param, _sign, _isp = self._prepare_risk_data(mkt_dict_, engine_, overwrite_isp_)
+
+        if _method == EngineMethod.BS.value:
+            _d1 = (log(_isp / self.strike) + (_rate + _vol ** 2 / 2) * self.maturity) / _vol / sqrt(self.maturity)
+            return exp(-_d1 ** 2 / 2) / sqrt(2 * pi) / _isp / _vol / sqrt(self.maturity)
+
+        elif _method == EngineMethod.MC.value:
+            from utils.monte_carlo import MonteCarlo
+            _iteration = _param.get(EngineParam.MCIteration.value)
+            if not _iteration:
+                raise ValueError("iteration not specified")
+            if not isinstance(_iteration, int):
+                raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
+            _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
+            _step = 0.01
+            _gamma = [(max(_sign * (_s + 2 * _step - self.strike), 0) - max(_sign * (_s - self.strike), 0)) -
+                      (max(_sign * (_s - self.strike), 0) + max(_sign * (_s - 2 * _step - self.strike), 0))
+                      for _s in _spot]
+            _gamma /= (4 * _step ** 2)
+            return average(_gamma) * exp(-_rate * self.maturity)
 
     @property
     def type(self):
@@ -131,6 +146,14 @@ class Option(Instrument):
             raise ValueError("invalid evaluation engine given: {}".format(_method))
         _param = engine_.get('param', {})
         return _method, _param
+
+    def _prepare_risk_data(self, mkt_dict_, engine_, overwrite_isp_=None):
+        _load_param = [EnvParam.RiskFreeRate.value, EnvParam.UdVolatility.value, EnvParam.UdDivYieldRatio.value]
+        _rate, _vol, _div = tuple(self._load_market(mkt_dict_, _load_param))
+        _method, _param = self._load_engine(engine_)
+        _sign = 1 if self.type == InstType.CallOption.value else -1
+        _isp = overwrite_isp_ if overwrite_isp_ else self.isp
+        return _rate, _vol, _div, _method, _param, _sign, _isp
 
 
 if __name__ == '__main__':

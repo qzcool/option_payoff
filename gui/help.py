@@ -6,29 +6,42 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QPlainTextEdit, QTabWidge
 
 help_content = [
     ("Inst Params", """1. Strike - strike price of an OPTION
-2. Unit - unit of each instrument
+
+2. Qty - unit of each instrument
     * could be a FLOAT number
     * could be NEGATIVE indicating SHORT position
-3. Cost - unit cost of an OPTION"""),
 
-    ("Curve Types", """1. Payoff Curve
-2. Profit Curve
-3. PV Curve
-4. Delta Curve"""),
+3. Premium - unit cost / premium of an OPTION"""),
+
+    ("Curve Types", """From portfolio view:
+1. Payoff Curve
+2. PV Curve
+3. Delta Curve
+
+From investment view:
+1. Net Payoff Curve
+2. PnL Curve"""),
 
     ("Pricing Tips", """1. Right click an OPTION for auto pricing
     * right click on the target line
+
 2. Edit pricing env in Menu - Config - Pricing Env"""),
 
     ("Pricing Params", """1. Annual Risk Free Rate (%, default 3)
+
 2. Underlying Volatility (%, default 30)
+
 3. Dividend Yield Ratio (%, default 0)
+
 4. Portfolio Maturity (y)
+
 5. Cost Rounding (default 2)
+
 6. Rate Format (default Single)
     * Single or Compound (continuous)
     * if Single is chosen, 1 & 3 will shifted via:
     * r_c = (ln(1 + r / 100) - 1) * 100
+
 7. Pricing Engine (default Black-Scholes)
     * Black-Scholes or Monte-Carlo""")
 ]

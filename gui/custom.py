@@ -2,11 +2,24 @@
 """customized widgets"""
 
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QCheckBox, QComboBox, QRadioButton, QSizePolicy, QTableWidget
+from PyQt5.QtWidgets import QCheckBox, QComboBox, QPushButton, QRadioButton, QSizePolicy, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import use
 use("Qt5Agg")
+
+
+class CustomPushButton(QPushButton):
+    """customized push button to return widget name and value when current check state is changed"""
+    pressed = pyqtSignal(str)
+
+    def __init__(self, display_='CustomPushButton', signal_='', *args, **kwargs):
+        super(CustomPushButton, self).__init__(display_, *args, **kwargs)
+        self._signal = signal_
+        self.clicked.connect(self._event)
+
+    def _event(self):
+        self.pressed.emit(self._signal)
 
 
 class CustomCheckBox(QCheckBox):

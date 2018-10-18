@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.16
+Version 1.2.17
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
@@ -12,6 +12,7 @@ Pricing is now available for vanilla options based on Black-Scholes or Monte-Car
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from gui.custom import CustomPushButton
 from gui.help import HelpDialog
 from gui.table import InstTable
 from gui.plot import PayoffCurve, PlotParam
@@ -23,6 +24,18 @@ from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
 from numpy import array
 from sys import argv as sys_argv, exit as sys_exit
+
+
+btn_group_1 = [
+    ("Payoff Curve", CurveType.Payoff.value),
+    ("PV Curve", CurveType.PV.value),
+    ("Delta Curve", CurveType.Delta.value),
+]
+
+btn_group_2 = [
+    ("Net Payoff Curve", CurveType.NetPayoff.value),
+    ("PnL Curve", CurveType.PnL.value),
+]
 
 
 class ApplicationWindow(QMainWindow):
@@ -72,8 +85,8 @@ class ApplicationWindow(QMainWindow):
         _sub_vbox = QVBoxLayout()
         _sub_vbox.setContentsMargins(0, 10, 0, 0)
         _sub_vbox.setSpacing(0)
-        _sub_vbox.addLayout(self._plot_btn_layout_1())
-        _sub_vbox.addLayout(self._plot_btn_layout_2())
+        _sub_vbox.addLayout(self._plot_btn_layout(btn_group_1))
+        _sub_vbox.addLayout(self._plot_btn_layout(btn_group_2))
         _vbox.addLayout(_sub_vbox)
 
         _main_layout.addLayout(_vbox)
@@ -183,34 +196,12 @@ class ApplicationWindow(QMainWindow):
 
         return _hbox
 
-    def _plot_btn_layout_1(self):
+    def _plot_btn_layout(self, btn_group_):
         _hbox = QHBoxLayout()
-
-        _plot_btn = QPushButton("Payoff Curve")
-        _plot_btn.clicked.connect(self._plot_payoff)
-        _hbox.addWidget(_plot_btn)
-
-        _plot_btn = QPushButton("PV Curve")
-        _plot_btn.clicked.connect(self._plot_pv)
-        _hbox.addWidget(_plot_btn)
-
-        _plot_btn = QPushButton("Delta Curve")
-        _plot_btn.clicked.connect(self._plot_delta)
-        _hbox.addWidget(_plot_btn)
-
-        return _hbox
-
-    def _plot_btn_layout_2(self):
-        _hbox = QHBoxLayout()
-
-        _plot_btn = QPushButton("Net Payoff Curve")
-        _plot_btn.clicked.connect(self._plot_net_payoff)
-        _hbox.addWidget(_plot_btn)
-
-        _plot_btn = QPushButton("PnL Curve")
-        _plot_btn.clicked.connect(self._plot_pnl)
-        _hbox.addWidget(_plot_btn)
-
+        for _btn in btn_group_:
+            _plot_btn = CustomPushButton(display_=_btn[0], signal_=_btn[1])
+            _plot_btn.pressed.connect(self._plot_impl)
+            _hbox.addWidget(_plot_btn)
         return _hbox
 
     def _set_table(self):
