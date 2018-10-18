@@ -1,10 +1,10 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.3.0
+Version 1.3.1
 Copyright: Tongyan Xu, 2018
 
-A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
+A simple tool to estimate the different spot-based curves of vanilla portfolios.
 
 Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
@@ -26,16 +26,17 @@ from numpy import array
 from sys import argv as sys_argv, exit as sys_exit
 
 
-btn_group_1 = [
-    ("Payoff Curve", CurveType.Payoff.value),
-    ("PV Curve", CurveType.PV.value),
-    ("Delta Curve", CurveType.Delta.value),
-    ("Gamma Curve", CurveType.Gamma.value),
-]
-
-btn_group_2 = [
-    ("Net Payoff Curve", CurveType.NetPayoff.value),
-    ("PnL Curve", CurveType.PnL.value),
+btn_group = [
+    [
+        ("Payoff Curve", CurveType.Payoff.value),
+        ("Net Payoff Curve", CurveType.NetPayoff.value),
+        ("PnL Curve", CurveType.PnL.value),
+    ],
+    [
+        ("PV Curve", CurveType.PV.value),
+        ("Delta Curve", CurveType.Delta.value),
+        ("Gamma Curve", CurveType.Gamma.value),
+    ],
 ]
 
 MC_warning_curve = [CurveType.PnL.value, CurveType.PV.value, CurveType.Delta.value, CurveType.Gamma.value]
@@ -88,8 +89,8 @@ class ApplicationWindow(QMainWindow):
         _sub_vbox = QVBoxLayout()
         _sub_vbox.setContentsMargins(0, 10, 0, 0)
         _sub_vbox.setSpacing(0)
-        _sub_vbox.addLayout(self._plot_btn_layout(btn_group_1))
-        _sub_vbox.addLayout(self._plot_btn_layout(btn_group_2))
+        for _btn in btn_group:
+            _sub_vbox.addLayout(self._plot_btn_layout(_btn))
         _vbox.addLayout(_sub_vbox)
 
         _main_layout.addLayout(_vbox)
