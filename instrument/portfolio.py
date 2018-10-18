@@ -1,15 +1,16 @@
 # coding=utf-8
 """definition of portfolio for payoff estimation"""
 
-from numpy import arange, array, vectorize
 from enum import Enum
 from instrument import InstType, option_type
+from numpy import arange, array, vectorize
 
 
 class CurveType(Enum):
     """supported curve type for portfolio curve generator"""
     Payoff = 'Payoff'
-    Profit = 'Profit'
+    NetPayoff = 'NetPayoff'
+    PnL = 'PnL'
     PV = 'PV'
     Delta = 'Delta'
 
@@ -32,8 +33,10 @@ class Portfolio(object):
         """generate x (spot / ISP) and y (payoff or) for portfolio payoff curve"""
         if type_ == CurveType.Payoff.value:
             _curve_func = self._payoff
-        elif type_ == CurveType.Profit.value:
-            _curve_func = self._profit
+        elif type_ == CurveType.NetPayoff.value:
+            _curve_func = self._net_payoff
+        elif type_ == CurveType.PnL.value:
+            _curve_func = self._pnl
         elif type_ == CurveType.PV.value:
             _curve_func = self._pv
         elif type_ == CurveType.Delta.value:
@@ -47,8 +50,11 @@ class Portfolio(object):
         if full_:
             if type_ == CurveType.Payoff.value:
                 _y.extend([array([_inst.payoff(_spot) for _spot in _x]) for _inst in self._components_show])
-            elif type_ == CurveType.Profit.value:
-                _y.extend([array([_inst.profit(_spot) for _spot in _x]) for _inst in self._components_show])
+            elif type_ == CurveType.NetPayoff.value:
+                _y.extend([array([_inst.net_payoff(_spot) for _spot in _x]) for _inst in self._components_show])
+            elif type_ == CurveType.PnL.value:
+                _y.extend([array([_inst.pnl(self.mkt_data, self.engine, _spot) for _spot in _x])
+                           for _inst in self._components_show])
             elif type_ == CurveType.PV.value:
                 _y.extend([array([_inst.pv(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
                            for _inst in self._components_show])
@@ -106,8 +112,11 @@ class Portfolio(object):
     def _payoff(self, spot_):
         return sum([_comp.payoff(spot_) for _comp in self._components])
 
-    def _profit(self, spot_):
-        return sum([_comp.profit(spot_) for _comp in self._components])
+    def _net_payoff(self, spot_):
+        return sum([_comp.net_payoff(spot_) for _comp in self._components])
+
+    def _pnl(self, spot_):
+        return sum([_comp.pnl(self.mkt_data, self.engine, spot_) for _comp in self._components])
 
     def _pv(self, spot_):
         return sum([_comp.pv(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])

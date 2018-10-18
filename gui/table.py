@@ -18,8 +18,8 @@ class TableCol(Enum):
     Type = 'Type'
     Strike = 'Strike'
     Maturity = 'Maturity'
-    Unit = 'Unit'
-    Cost = 'Cost'
+    Qty = 'Qty'
+    Premium = 'Premium'
     Show = 'Show'
 
 
@@ -34,8 +34,8 @@ class ColType(Enum):
 table_col = [
     (TableCol.Type.value, ColType.Other.value, "Type", InstParam.InstType.value, 80),
     (TableCol.Strike.value, ColType.Number.value, "Strike", InstParam.OptionStrike.value, 50),
-    (TableCol.Unit.value, ColType.Number.value, "Unit", InstParam.InstUnit.value, 50),
-    (TableCol.Cost.value, ColType.Number.value, "Cost", InstParam.InstCost.value, 50),
+    (TableCol.Qty.value, ColType.Number.value, "Qty", InstParam.InstUnit.value, 50),
+    (TableCol.Premium.value, ColType.Number.value, "Premium", InstParam.InstCost.value, 60),
     (TableCol.Show.value, ColType.Boolean.value, "", PlotParam.Show.value, 30),
 ]
 
@@ -232,7 +232,7 @@ class InstTable(CustomTableWidget):
         _inst = Instrument.get_inst(_raw_data)
         _price = _inst.pv(_mkt, _engine)
         for _idx, _col in enumerate(table_col):
-            if _col[0] == TableCol.Cost.value:
+            if _col[0] == TableCol.Premium.value:
                 self.item(row_, _idx).setText(str(round(_price, _rounding)))
 
     def _inst_id(self):

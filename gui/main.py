@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.15
+Version 1.2.16
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
@@ -9,8 +9,6 @@ A simple tool to estimate the payoff / profit / pv / delta curve of vanilla port
 Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
 
-from sys import argv as sys_argv, exit as sys_exit
-from numpy import array
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
 from PyQt5.QtWidgets import QVBoxLayout, QWidget
@@ -23,6 +21,8 @@ from instrument.default_param import env_default_param
 from instrument.env_param import EngineMethod
 from instrument.portfolio import CurveType, Portfolio
 from json import dumps, loads
+from numpy import array
+from sys import argv as sys_argv, exit as sys_exit
 
 
 class ApplicationWindow(QMainWindow):
@@ -40,15 +40,15 @@ class ApplicationWindow(QMainWindow):
         self._main = QWidget(self)
         self._plot = QWidget(self._main)
         self._table = QWidget(self._main)
-        self._env_box = None
-        self._help_box = None
+        self._env_box = QWidget(self._main)
+        self._help_box = QWidget(self._main)
         # initialize data storage
         self.env_data = env_default_param
         self._last_path = '.'
         # setup and show
         self.setup_ui()
         self.setCentralWidget(self._main)
-        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 480))
+        self.setGeometry(QRect(100, 100, 556 + self._table.col_width(), 500))
         self.show()
 
     def setup_ui(self):
@@ -60,15 +60,23 @@ class ApplicationWindow(QMainWindow):
         _main_layout = QHBoxLayout(self._main)
 
         _vbox = QVBoxLayout()
+        _vbox.setSpacing(0)
         _vbox.addWidget(self._table)
         _vbox.addLayout(self._inst_btn_layout())
         _main_layout.addLayout(_vbox)
 
         _vbox = QVBoxLayout()
+        _vbox.setSpacing(0)
         _vbox.addWidget(self._plot)
-        _vbox.addLayout(self._plot_btn_layout())
-        _main_layout.addLayout(_vbox)
 
+        _sub_vbox = QVBoxLayout()
+        _sub_vbox.setContentsMargins(0, 10, 0, 0)
+        _sub_vbox.setSpacing(0)
+        _sub_vbox.addLayout(self._plot_btn_layout_1())
+        _sub_vbox.addLayout(self._plot_btn_layout_2())
+        _vbox.addLayout(_sub_vbox)
+
+        _main_layout.addLayout(_vbox)
         self._main.setFocus()
 
     def _load(self):
@@ -158,12 +166,6 @@ class ApplicationWindow(QMainWindow):
         _help.addAction("&About", self._about, Qt.CTRL + Qt.Key_A)
         self._menu.addMenu(_help)
 
-    def _add_button_group(self, layout_):
-        _vbox = QVBoxLayout()
-        _vbox.addLayout(self._inst_btn_layout())
-        _vbox.addLayout(self._plot_btn_layout())
-        layout_.addLayout(_vbox)
-
     def _inst_btn_layout(self):
         _hbox = QHBoxLayout()
 
@@ -181,15 +183,11 @@ class ApplicationWindow(QMainWindow):
 
         return _hbox
 
-    def _plot_btn_layout(self):
+    def _plot_btn_layout_1(self):
         _hbox = QHBoxLayout()
 
         _plot_btn = QPushButton("Payoff Curve")
         _plot_btn.clicked.connect(self._plot_payoff)
-        _hbox.addWidget(_plot_btn)
-
-        _plot_btn = QPushButton("Profit Curve")
-        _plot_btn.clicked.connect(self._plot_profit)
         _hbox.addWidget(_plot_btn)
 
         _plot_btn = QPushButton("PV Curve")
@@ -198,6 +196,19 @@ class ApplicationWindow(QMainWindow):
 
         _plot_btn = QPushButton("Delta Curve")
         _plot_btn.clicked.connect(self._plot_delta)
+        _hbox.addWidget(_plot_btn)
+
+        return _hbox
+
+    def _plot_btn_layout_2(self):
+        _hbox = QHBoxLayout()
+
+        _plot_btn = QPushButton("Net Payoff Curve")
+        _plot_btn.clicked.connect(self._plot_net_payoff)
+        _hbox.addWidget(_plot_btn)
+
+        _plot_btn = QPushButton("PnL Curve")
+        _plot_btn.clicked.connect(self._plot_pnl)
         _hbox.addWidget(_plot_btn)
 
         return _hbox
@@ -238,8 +249,11 @@ class ApplicationWindow(QMainWindow):
     def _plot_payoff(self):
         self._plot_impl(CurveType.Payoff.value)
 
-    def _plot_profit(self):
-        self._plot_impl(CurveType.Profit.value)
+    def _plot_net_payoff(self):
+        self._plot_impl(CurveType.NetPayoff.value)
+
+    def _plot_pnl(self):
+        self._plot_impl(CurveType.PnL.value)
 
     def _plot_pv(self):
         self._plot_impl(CurveType.PV.value)
@@ -249,14 +263,15 @@ class ApplicationWindow(QMainWindow):
 
     def _plot_impl(self, type_):
         _portfolio = self._prepare_data()
-        if type_ == CurveType.PV.value and _portfolio.engine['engine'] == EngineMethod.MC.value:
+        if _portfolio.engine['engine'] == EngineMethod.MC.value \
+                and type_ in [CurveType.PnL, CurveType.PV.value, CurveType.Delta.value]:
             if QMessageBox.question(
                     self, "Evaluation Cure",
                     "Using Monte-Carlo to generate Evaluation Curve might be extremely time consuming. "
                     "Are you sure to continue?") == QMessageBox.No:
                 return
         _x, _y = _portfolio.gen_curve(type_, full_=True)
-        _x_ref = 0 if type_ == CurveType.Profit.value else 100 if _portfolio.has_stock() else 0
+        _x_ref = 0 if type_ == CurveType.PnL.value else 100 if _portfolio.has_stock() else 0
         self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref, y_ref=_portfolio.isp()))
 
     def _test(self):

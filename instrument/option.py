@@ -1,12 +1,11 @@
 # coding=utf-8
 """definition of option for payoff estimation and pricing"""
 
+from instrument import InstParam, InstType, Instrument, option_type
+from instrument.env_param import EngineMethod, EngineParam, EnvParam
 from numpy import average
 from numpy.ma import exp, log, sqrt
 from scipy.stats import norm
-from instrument import InstParam, InstType, Instrument, option_type
-from instrument.env_param import EngineMethod, EngineParam, EnvParam, RateFormat
-from utils import to_continuous_rate
 
 
 class Option(Instrument):
@@ -35,7 +34,8 @@ class Option(Instrument):
 
     def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
         """calculate option PV with market data and engine"""
-        _rate, _vol, _div = self._load_market(mkt_dict_)
+        _load_param = [EnvParam.RiskFreeRate.value, EnvParam.UdVolatility.value, EnvParam.UdDivYieldRatio.value]
+        _rate, _vol, _div = tuple(self._load_market(mkt_dict_, _load_param))
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
         _isp = overwrite_isp_ if overwrite_isp_ else self.isp
@@ -59,7 +59,8 @@ class Option(Instrument):
 
     def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
         """calculate option DELTA with market data and engine"""
-        _rate, _vol, _div = self._load_market(mkt_dict_)
+        _load_param = [EnvParam.RiskFreeRate.value, EnvParam.UdVolatility.value, EnvParam.UdDivYieldRatio.value]
+        _rate, _vol, _div = tuple(self._load_market(mkt_dict_, _load_param))
         _method, _param = self._load_engine(engine_)
         _sign = 1 if self.type == InstType.CallOption.value else -1
         _isp = overwrite_isp_ if overwrite_isp_ else self.isp
@@ -122,25 +123,6 @@ class Option(Instrument):
             if maturity_ < 0:
                 raise ValueError("non-negative value is required for maturity, not {}".format(maturity_))
             self._maturity = maturity_
-
-    @staticmethod
-    def _load_market(mkt_dict_):
-        _rate = mkt_dict_.get(EnvParam.RiskFreeRate.value) / 100
-        if not isinstance(_rate, (int, float)):
-            raise ValueError("type <int> or <float> is required for market risk free rate, not {}".format(type(_rate)))
-        _vol = mkt_dict_.get(EnvParam.UdVolatility.value) / 100
-        if not isinstance(_vol, (int, float)):
-            raise ValueError("type <int> or <float> is required for underlying volatility, not {}".format(type(_vol)))
-        _div = mkt_dict_.get(EnvParam.UdDivYieldRatio.value) / 100
-        if not isinstance(_div, (int, float)):
-            raise ValueError("type <int> or <float> is required for dividend yield ratio, not {}".format(type(_div)))
-        _rate_format = mkt_dict_.get(EnvParam.RateFormat.value)
-        if _rate_format not in [_r.value for _r in RateFormat]:
-            raise ValueError("invalid rate type given: {}".format(_rate_format))
-        if _rate_format == RateFormat.Single.value:
-            _rate = to_continuous_rate(_rate)
-            _div = to_continuous_rate(_div)
-        return _rate, _vol, _div
 
     @staticmethod
     def _load_engine(engine_):

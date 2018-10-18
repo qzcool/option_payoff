@@ -7,7 +7,7 @@ from utils import parse_kwargs
 
 
 class MonteCarlo(object):
-    """..."""
+    """Monte Carlo Engine"""
 
     @classmethod
     def stock_price(cls, iteration_=1, **kwargs):

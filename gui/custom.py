@@ -5,6 +5,8 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QCheckBox, QComboBox, QRadioButton, QSizePolicy, QTableWidget
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import use
+use("Qt5Agg")
 
 
 class CustomCheckBox(QCheckBox):

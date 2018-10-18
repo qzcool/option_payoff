@@ -1,9 +1,9 @@
 # coding=utf-8
 """plotting template"""
 
-from numpy import array, zeros
 from enum import Enum
 from gui.custom import CustomMplCanvas
+from numpy import array, zeros
 from utils import PRECISION_ZERO
 
 
