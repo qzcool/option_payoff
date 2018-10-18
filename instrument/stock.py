@@ -23,3 +23,7 @@ class Stock(Instrument):
     def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
         """no delta calc needed for stock"""
         return 1
+
+    def gamma(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """no gamma calc needed for stock"""
+        return 0

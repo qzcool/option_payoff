@@ -91,10 +91,10 @@ class Option(Instrument):
                 raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
             _spot = MonteCarlo.stock_price(_iteration, isp=_isp, rate=_rate, div=_div, vol=_vol, maturity=self.maturity)
             _step = 0.01
-            _gamma = [(max(_sign * (_s + 2 * _step - self.strike), 0) - max(_sign * (_s - self.strike), 0)) -
-                      (max(_sign * (_s - self.strike), 0) + max(_sign * (_s - 2 * _step - self.strike), 0))
+            _gamma = [((max(_sign * (_s + 2 * _step - self.strike), 0) - max(_sign * (_s - self.strike), 0)) -
+                      (max(_sign * (_s - self.strike), 0) - max(_sign * (_s - 2 * _step - self.strike), 0))) /
+                      (4 * _step ** 2)
                       for _s in _spot]
-            _gamma /= (4 * _step ** 2)
             return average(_gamma) * exp(-_rate * self.maturity)
 
     @property

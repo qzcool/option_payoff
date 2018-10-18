@@ -13,6 +13,7 @@ class CurveType(Enum):
     PnL = 'PnL'
     PV = 'PV'
     Delta = 'Delta'
+    Gamma = 'Gamma'
 
 
 class Portfolio(object):
@@ -41,6 +42,8 @@ class Portfolio(object):
             _curve_func = self._pv
         elif type_ == CurveType.Delta.value:
             _curve_func = self._delta
+        elif type_ == CurveType.Gamma.value:
+            _curve_func = self._gamma
         else:
             raise ValueError("invalid curve type {}".format(type_))
 
@@ -60,6 +63,9 @@ class Portfolio(object):
                            for _inst in self._components_show])
             elif type_ == CurveType.Delta.value:
                 _y.extend([array([_inst.delta(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
+                           for _inst in self._components_show])
+            elif type_ == CurveType.Gamma.value:
+                _y.extend([array([_inst.gamma(self.mkt_data, self.engine, _spot) * _inst.unit for _spot in _x])
                            for _inst in self._components_show])
         return _x, _y
 
@@ -123,6 +129,9 @@ class Portfolio(object):
 
     def _delta(self, spot_):
         return sum([_comp.delta(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])
+
+    def _gamma(self, spot_):
+        return sum([_comp.gamma(self.mkt_data, self.engine, spot_) * _comp.unit for _comp in self._components])
 
     def _x_range(self, margin_, step_):
         _strike_list = [_comp.strike for _comp in self._components if _comp.type in option_type]

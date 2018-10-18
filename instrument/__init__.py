@@ -88,6 +88,10 @@ class Instrument(object):
         """evaluate instrument DELTA with market data and engine"""
         raise NotImplementedError("'delta' method need to be defined in sub-classes")
 
+    def gamma(self, mkt_dict_, engine_, overwrite_isp_=None):
+        """evaluate instrument GAMMA with market data and engine"""
+        raise NotImplementedError("'gamma' method need to be defined in sub-classes")
+
     @property
     def isp(self):
         """instrument ISP"""

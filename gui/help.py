@@ -15,12 +15,21 @@ help_content = [
 
     ("Curve Types", """From portfolio view:
 1. Payoff Curve
+    * portfolio payoff at maturity
 2. PV Curve
+    * portfolio current PV
 3. Delta Curve
+    * portfolio current Delta
+4. Gamma Curve
+    * portfolio current Gamma
+    * Monte-Carlo is not recommended
 
 From investment view:
 1. Net Payoff Curve
-2. PnL Curve"""),
+    * portfolio payoff at maturity minus portfolio cost
+2. PnL Curve
+    * portfolio current PnL
+    * portfolio PV minus portfolio cost"""),
 
     ("Pricing Tips", """1. Right click an OPTION for auto pricing
     * right click on the target line
@@ -28,20 +37,14 @@ From investment view:
 2. Edit pricing env in Menu - Config - Pricing Env"""),
 
     ("Pricing Params", """1. Annual Risk Free Rate (%, default 3)
-
 2. Underlying Volatility (%, default 30)
-
 3. Dividend Yield Ratio (%, default 0)
-
 4. Portfolio Maturity (y)
-
 5. Cost Rounding (default 2)
-
 6. Rate Format (default Single)
     * Single or Compound (continuous)
     * if Single is chosen, 1 & 3 will shifted via:
     * r_c = (ln(1 + r / 100) - 1) * 100
-
 7. Pricing Engine (default Black-Scholes)
     * Black-Scholes or Monte-Carlo""")
 ]

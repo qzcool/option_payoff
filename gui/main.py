@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.2.17
+Version 1.3.0
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the payoff / profit / pv / delta curve of vanilla portfolios.
@@ -30,12 +30,15 @@ btn_group_1 = [
     ("Payoff Curve", CurveType.Payoff.value),
     ("PV Curve", CurveType.PV.value),
     ("Delta Curve", CurveType.Delta.value),
+    ("Gamma Curve", CurveType.Gamma.value),
 ]
 
 btn_group_2 = [
     ("Net Payoff Curve", CurveType.NetPayoff.value),
     ("PnL Curve", CurveType.PnL.value),
 ]
+
+MC_warning_curve = [CurveType.PnL.value, CurveType.PV.value, CurveType.Delta.value, CurveType.Gamma.value]
 
 
 class ApplicationWindow(QMainWindow):
@@ -254,8 +257,7 @@ class ApplicationWindow(QMainWindow):
 
     def _plot_impl(self, type_):
         _portfolio = self._prepare_data()
-        if _portfolio.engine['engine'] == EngineMethod.MC.value \
-                and type_ in [CurveType.PnL, CurveType.PV.value, CurveType.Delta.value]:
+        if _portfolio.engine['engine'] == EngineMethod.MC.value and type_ in MC_warning_curve:
             if QMessageBox.question(
                     self, "Evaluation Cure",
                     "Using Monte-Carlo to generate Evaluation Curve might be extremely time consuming. "
