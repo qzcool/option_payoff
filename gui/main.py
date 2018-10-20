@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.3.2
+Version 1.3.3
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the different spot-based curves of vanilla portfolios.
@@ -272,7 +272,7 @@ class ApplicationWindow(QMainWindow):
                 return
         _x, _y = _portfolio.gen_curve(type_, full_=True)
         _x_ref = 0 if type_ == CurveType.PnL.value else 100 if _portfolio.has_stock() else 0
-        self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref, y_ref=_portfolio.isp()))
+        self._plot.update_figure(dict(x=_x, y=_y, type=type_, x_ref=_x_ref, y_ref=_portfolio.center()))
 
     def _test(self):
         pass

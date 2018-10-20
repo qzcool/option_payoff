@@ -2,7 +2,7 @@
 """definition of stock for payoff estimation and pricing"""
 
 from instrument import Instrument
-# from instrument.env_param import EnvParam
+from instrument.env_param import EnvParam
 # from numpy.ma import exp
 
 
@@ -12,22 +12,22 @@ class Stock(Instrument):
 
     def __init__(self, inst_dict_):
         super(Stock, self).__init__(inst_dict_)
-        self.price = self.isp
 
-    def payoff(self, spot_):
+    def payoff(self, mkt_dict_):
         """get stock payoff for given spot"""
-        return spot_ * self.unit
+        _spot = self._load_market(mkt_dict_, [EnvParam.UdSpotForPrice.value])[0]
+        return _spot * self.unit
 
-    def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def pv(self, mkt_dict_, engine_):
         """no pv calc needed for stock"""
         # _div, _t = tuple(self._load_market(mkt_dict_, [EnvParam.UdDivYieldRatio.value, EnvParam.PortMaturity.value]))
-        _base = overwrite_isp_ if overwrite_isp_ else self.isp
-        return _base  # * exp(-_div * _t)
+        _spot = self._load_market(mkt_dict_, [EnvParam.UdSpotForPrice.value])[0]
+        return _spot  # * exp(-_div * _t)
 
-    def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def delta(self, mkt_dict_, engine_):
         """no delta calc needed for stock"""
         return 1
 
-    def gamma(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def gamma(self, mkt_dict_, engine_):
         """no gamma calc needed for stock"""
         return 0

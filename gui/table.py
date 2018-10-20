@@ -71,8 +71,8 @@ class InstTable(CustomTableWidget):
         for _idx, _col in enumerate(table_col):
             if _col[1] in [ColType.String.value, ColType.Number.value]:
                 _default = default_param[_type].get(_col[3], '-')
-                if _col[3] == InstParam.OptionStrike.value:
-                    _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value, _default)
+                if _default == EnvParam.UdSpotForPrice.value:
+                    _default = self._parent.env_data.get(EnvParam.UdSpotForPrice.value, '-')
                 _content = data_.get(_col[3], _default) if data_ else _default
                 _wgt = QTableWidgetItem(str(_content))
                 _wgt.setTextAlignment(Qt.AlignCenter)
@@ -140,7 +140,6 @@ class InstTable(CustomTableWidget):
     def _collect_row_full(self, row_):
         _data_dict = self._collect_row(row_)
         _type = _data_dict.get(InstParam.InstType.value)
-        _data_dict[InstParam.InstISP.value] = self._parent.env_data[EnvParam.UdInitialPrice.value]
         if _type in option_type:
             _data_dict[InstParam.OptionMaturity.value] = self._parent.env_data[EnvParam.PortMaturity.value]
         return _data_dict
@@ -176,23 +175,22 @@ class InstTable(CustomTableWidget):
             if _type:
                 for _idx, _col in enumerate(table_col):
                     if _col[1] in [ColType.String.value, ColType.Number.value]:
-                        if _col[3] == InstParam.OptionStrike.value:
-                            _default = self._parent.env_data.get(EnvParam.UdInitialPrice.value,
-                                                                 default_param[_type].get(_col[3], '-'))
-                        else:
-                            _default = default_param[_type].get(_col[3], '-')
+                        _default = default_param[_type].get(_col[3], '-')
+                        if _default == EnvParam.UdSpotForPrice.value:
+                            _default = self._parent.env_data.get(EnvParam.UdSpotForPrice.value, '-')
                         self.item(_row, _idx).setText(str(_default))
                         self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable)
                     elif _col[1] == ColType.Boolean.value:
                         _default = default_param[_type].get(_col[3], False)
                         self.item(_row, _idx).setCheckState(Qt.Checked if _default else Qt.Unchecked)
-                        self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable)
+                        self.item(_row, _idx).setFlags(Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable |
+                                                       Qt.ItemIsUserCheckable)
                     elif _col[1] == ColType.Other.value:
                         pass
 
                 if _type == InstType.Stock.value:
                     for _idx, _col in enumerate(table_col):
-                        if _col[3] in [InstParam.OptionStrike.value, InstParam.InstCost.value]:
+                        if _col[3] in [InstParam.OptionStrike.value]:
                             self.item(_row, _idx).setText('-')
                             self.item(_row, _idx).setFlags(Qt.ItemIsSelectable)
                 return

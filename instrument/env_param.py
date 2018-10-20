@@ -9,7 +9,7 @@ class EnvParam(Enum):
     RiskFreeRate = 'RiskFreeRate'
     UdVolatility = 'UdVolatility'
     UdDivYieldRatio = 'UdDivYieldRatio'
-    UdInitialPrice = 'UdInitialPrice'
+    UdSpotForPrice = 'UdSpotForPrice'
     PortMaturity = 'PortMaturity'
     CostRounding = 'CostRounding'
     RateFormat = 'RateFormat'

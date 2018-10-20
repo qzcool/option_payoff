@@ -35,14 +35,12 @@ class Instrument(object):
     """
     _name = "instrument"
     _inst_dict = None
-    _isp = None
     _type = None
     _unit = None
     _price = None
 
     def __init__(self, inst_dict_):
         self._inst_dict = inst_dict_
-        self.isp = inst_dict_.get(InstParam.InstISP.value)
         self.type = inst_dict_.get(InstParam.InstType.value)
         self.unit = inst_dict_.get(InstParam.InstUnit.value)
         self.price = inst_dict_.get(InstParam.InstCost.value)
@@ -63,48 +61,34 @@ class Instrument(object):
         if type_ is None:
             raise ValueError("instrument type not specified")
 
-    def payoff(self, spot_):
+    def payoff(self, mkt_dict_):
         """get instrument payoff for given spot"""
         raise NotImplementedError("'payoff' method need to be defined in sub-classes")
 
-    def net_payoff(self, spot_):
+    def net_payoff(self, mkt_dict_):
         """get instrument net payoff for given spot"""
-        return self.payoff(spot_) - self.unit * self.price
+        return self.payoff(mkt_dict_) - self.unit * self.price
 
-    def profit_discount(self, spot_, mkt_dict_, time_):
+    def profit_discount(self, mkt_dict_, time_):
         """get instrument pnl for given spot"""
-        _rate = self._load_market(mkt_dict_, [EnvParam.RiskFreeRate.value])[0]
-        return self.payoff(spot_) * exp(-_rate * time_) - self.unit * self.price
+        _rate, _spot = tuple(self._load_market(mkt_dict_, [EnvParam.RiskFreeRate.value, EnvParam.UdSpotForPrice.value]))
+        return self.payoff(_spot) * exp(-_rate * time_) - self.unit * self.price
 
-    def pnl(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def pnl(self, mkt_dict_, engine_):
         """get instrument pnl for given spot"""
-        return (self.pv(mkt_dict_, engine_, overwrite_isp_) - self.price) * self.unit
+        return (self.pv(mkt_dict_, engine_) - self.price) * self.unit
 
-    def pv(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def pv(self, mkt_dict_, engine_):
         """evaluate instrument PV on given market"""
         raise NotImplementedError("'pv' method need to be defined in sub-classes")
 
-    def delta(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def delta(self, mkt_dict_, engine_):
         """evaluate instrument DELTA with market data and engine"""
         raise NotImplementedError("'delta' method need to be defined in sub-classes")
 
-    def gamma(self, mkt_dict_, engine_, overwrite_isp_=None):
+    def gamma(self, mkt_dict_, engine_):
         """evaluate instrument GAMMA with market data and engine"""
         raise NotImplementedError("'gamma' method need to be defined in sub-classes")
-
-    @property
-    def isp(self):
-        """instrument ISP"""
-        if self._isp is None:
-            raise ValueError("{} ISP not specified".format(self._name))
-        return self._isp
-
-    @isp.setter
-    def isp(self, isp_):
-        if isp_ is not None:
-            if not isinstance(isp_, (int, float)):
-                raise ValueError("type <int> or <float> is required for ISP, not {}".format(type(isp_)))
-            self._isp = isp_
 
     @property
     def type(self):

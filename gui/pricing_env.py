@@ -27,7 +27,7 @@ env_param = [
      None, None, None),
     (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield Ratio (%):", fixed_width,
      None, None, None),
-    (FieldType.Number.value, EnvParam.UdInitialPrice.value, "Ud Initial Share Price:", fixed_width,
+    (FieldType.Number.value, EnvParam.UdSpotForPrice.value, "Ud Spot for Pricing:", fixed_width,
      None, None, None),
     (FieldType.Number.value, EnvParam.PortMaturity.value, "Time to Maturity (Y):", fixed_width,
      None, None, None),
