@@ -1,7 +1,7 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.3.3
+Version 1.3.4
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the different spot-based curves of vanilla portfolios.

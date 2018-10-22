@@ -34,7 +34,13 @@ From investment view:
     ("Pricing Tips", """1. Right click an OPTION for auto pricing
     * right click on the target line
 
-2. Edit pricing env in Menu - Config - Pricing Env"""),
+2. Edit pricing env in Menu - Config - Pricing Env
+
+3. Plotting for portfolios with STOCK may become confusing 
+    when dividend yield is not zero.
+    Because of the difference between STOCK and FORWARD, 
+    STOCK cannot be used to hedge OPTION directly according 
+    to the DELTA curve."""),
 
     ("Pricing Params", """1. Annual Risk Free Rate (%, default 3)
 2. Underlying Volatility (%, default 30)

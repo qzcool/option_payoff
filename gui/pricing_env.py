@@ -25,7 +25,7 @@ env_param = [
      None, None, None),
     (FieldType.Number.value, EnvParam.UdVolatility.value, "Ud Volatility (%):", fixed_width,
      None, None, None),
-    (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield Ratio (%):", fixed_width,
+    (FieldType.Number.value, EnvParam.UdDivYieldRatio.value, "Ud Dividend Yield (%):", fixed_width,
      None, None, None),
     (FieldType.Number.value, EnvParam.UdSpotForPrice.value, "Ud Spot for Pricing:", fixed_width,
      None, None, None),
