@@ -17,7 +17,7 @@ class EnvParam(Enum):
 
 
 class RateFormat(Enum):
-    """..."""
+    """Rate format - single or continuously compounded"""
     Single = 'Single'
     Compound = 'Compound'
 
