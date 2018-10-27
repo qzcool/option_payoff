@@ -228,7 +228,7 @@ class InstTable(CustomTableWidget):
         _mkt, _engine, _rounding = parse_env(self._parent.env_data)
         # do pricing
         _inst = Instrument.get_inst(_raw_data)
-        _price = _inst.pv(_mkt, _engine)
+        _price = _inst.pv(_mkt, _engine, unit_=1)
         for _idx, _col in enumerate(table_col):
             if _col[0] == TableCol.Premium.value:
                 self.item(row_, _idx).setText(str(round(_price, _rounding)))

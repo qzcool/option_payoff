@@ -76,17 +76,17 @@ class Instrument(object):
 
     def pnl(self, mkt_dict_, engine_):
         """get instrument pnl for given spot"""
-        return (self.pv(mkt_dict_, engine_) - self.price) * self.unit
+        return (self.pv(mkt_dict_, engine_, unit_=1) - self.price) * self.unit
 
-    def pv(self, mkt_dict_, engine_):
+    def pv(self, mkt_dict_, engine_, unit_=None):
         """evaluate instrument PV on given market"""
         raise NotImplementedError("'pv' method need to be defined in sub-classes")
 
-    def delta(self, mkt_dict_, engine_):
+    def delta(self, mkt_dict_, engine_, unit_=None):
         """evaluate instrument DELTA with market data and engine"""
         raise NotImplementedError("'delta' method need to be defined in sub-classes")
 
-    def gamma(self, mkt_dict_, engine_):
+    def gamma(self, mkt_dict_, engine_, unit_=None):
         """evaluate instrument GAMMA with market data and engine"""
         raise NotImplementedError("'gamma' method need to be defined in sub-classes")
 

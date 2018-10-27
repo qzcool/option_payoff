@@ -33,15 +33,16 @@ class Option(Instrument):
         _reference = _spot - self.strike if self.type == InstType.CallOption.value else self.strike - _spot
         return max([_reference, 0]) * self.unit
 
-    def pv(self, mkt_dict_, engine_):
+    def pv(self, mkt_dict_, engine_, unit_=None):
         """calculate option PV with market data and engine"""
         _rate, _spot, _vol, _div, _method, _param, _sign, _strike, _t = self._prepare_risk_data(mkt_dict_, engine_)
+        _unit = unit_ or self.unit
 
         if _method == EngineMethod.BS.value:
             _d1 = (log(_spot / _strike) + (_rate - _div + _vol ** 2 / 2) * _t) / _vol / sqrt(_t)
             _d2 = _d1 - _vol * sqrt(_t)
             return _sign * (_spot * exp(-_div * _t) * norm.cdf(_sign * _d1) -
-                            _strike * exp(-_rate * _t) * norm.cdf(_sign * _d2))
+                            _strike * exp(-_rate * _t) * norm.cdf(_sign * _d2)) * _unit
 
         elif _method == EngineMethod.MC.value:
             from utils.monte_carlo import MonteCarlo
@@ -52,15 +53,16 @@ class Option(Instrument):
                 raise ValueError("type <int> is required for iteration, not {}".format(type(_iteration)))
             _spot = MonteCarlo.stock_price(_iteration, isp=_spot, rate=_rate, div=_div, vol=_vol, t=_t)
             _price = [max(_sign * (_s - _strike), 0) for _s in _spot]
-            return average(_price) * exp(-_rate * _t)
+            return average(_price) * exp(-_rate * _t) * _unit
 
-    def delta(self, mkt_dict_, engine_):
+    def delta(self, mkt_dict_, engine_, unit_=None):
         """calculate option DELTA with market data and engine"""
         _rate, _spot, _vol, _div, _method, _param, _sign, _strike, _t = self._prepare_risk_data(mkt_dict_, engine_)
+        _unit = unit_ or self.unit
 
         if _method == EngineMethod.BS.value:
             _d1 = (log(_spot / _strike) + (_rate + _vol ** 2 / 2) * _t) / _vol / sqrt(_t)
-            return _sign * norm.cdf(_sign * _d1) * exp(-_div * _t)
+            return _sign * norm.cdf(_sign * _d1) * exp(-_div * _t) * _unit
 
         elif _method == EngineMethod.MC.value:
             from utils.monte_carlo import MonteCarlo
@@ -73,15 +75,16 @@ class Option(Instrument):
             _step = 0.01
             _delta = [(max(_sign * (_s + _step - _strike), 0) - max(_sign * (_s - _step - _strike), 0)) /
                       (_step * 2) for _s in _spot]
-            return average(_delta) * exp(-_rate * _t)
+            return average(_delta) * exp(-_rate * _t) * _unit
 
-    def gamma(self, mkt_dict_, engine_):
+    def gamma(self, mkt_dict_, engine_, unit_=None):
         """calculate option GAMMA with market data and engine"""
         _rate, _spot, _vol, _div, _method, _param, _sign, _strike, _t = self._prepare_risk_data(mkt_dict_, engine_)
+        _unit = unit_ or self.unit
 
         if _method == EngineMethod.BS.value:
             _d1 = (log(_spot / _strike) + (_rate + _vol ** 2 / 2) * _t) / _vol / sqrt(_t)
-            return exp(-_d1 ** 2 / 2) / sqrt(2 * pi) / _spot / _vol / sqrt(_t) * exp(-_div * _t)
+            return exp(-_d1 ** 2 / 2) / sqrt(2 * pi) / _spot / _vol / sqrt(_t) * exp(-_div * _t) * _unit
 
         elif _method == EngineMethod.MC.value:
             from utils.monte_carlo import MonteCarlo
@@ -96,7 +99,7 @@ class Option(Instrument):
                       (max(_sign * (_s - _strike), 0) - max(_sign * (_s - 2 * _step - _strike), 0))) /
                       (4 * _step ** 2)
                       for _s in _spot]
-            return average(_gamma) * exp(-_rate * _t)
+            return average(_gamma) * exp(-_rate * _t) * _unit
 
     @property
     def type(self):

@@ -18,16 +18,19 @@ class Stock(Instrument):
         _spot = self._load_market(mkt_dict_, [EnvParam.UdSpotForPrice.value])[0]
         return _spot * self.unit
 
-    def pv(self, mkt_dict_, engine_):
+    def pv(self, mkt_dict_, engine_, unit_=None):
         """no pv calc needed for stock"""
         # _div, _t = tuple(self._load_market(mkt_dict_, [EnvParam.UdDivYieldRatio.value, EnvParam.PortMaturity.value]))
+        _unit = unit_ or self.unit
         _spot = self._load_market(mkt_dict_, [EnvParam.UdSpotForPrice.value])[0]
-        return _spot  # * exp(-_div * _t)
+        return _spot * _unit  # * exp(-_div * _t)
 
-    def delta(self, mkt_dict_, engine_):
+    def delta(self, mkt_dict_, engine_, unit_=None):
         """no delta calc needed for stock"""
-        return 1
+        _unit = unit_ or self.unit
+        return 1 * _unit
 
-    def gamma(self, mkt_dict_, engine_):
+    def gamma(self, mkt_dict_, engine_, unit_=None):
         """no gamma calc needed for stock"""
-        return 0
+        _unit = unit_ or self.unit
+        return 0 * _unit
