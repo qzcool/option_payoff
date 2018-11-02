@@ -1,13 +1,16 @@
 # coding=utf-8
 """
 Vanilla Portfolio Ralated Curve Generator
-Version 1.3.7
+Version 1.3.8
 Copyright: Tongyan Xu, 2018
 
 A simple tool to estimate the different spot-based curves of vanilla portfolios.
 
 Pricing is now available for vanilla options based on Black-Scholes or Monte-Carlo methods.
 """
+
+from sys import path as sys_path
+sys_path.append("{}/..".format(sys_path[0]))
 
 from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtWidgets import QApplication, QFileDialog, QHBoxLayout, QMainWindow, QMenu, QMessageBox, QPushButton
